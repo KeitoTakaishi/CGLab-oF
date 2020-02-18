@@ -3,26 +3,32 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetVerticalSync(false);
-    ofSetBackgroundColor(100);
-    //ofEnableBlendMode(OF_BLENDMODE_ADD);
+    ofSetBackgroundColor(0.0);
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
     cam.setupPerspective();
+
+    particleNum = Params::particleNum;
+    cout << particleNum << endl;
     
-    particleNum = 1000;
+    
+    sph = new Sph(Params::particleNum);
+    /*
     texRes = (int)ceil(sqrt(particleNum));
     
     
     //shader load
     //render.load("shaders/render");
     updatePos.load("shaders/pass.vert", "shaders/update.frag");
+    render.load("shaders/render");
     
     //vbo
     //ofDisableArbTexを使用していないのでがてテクセルが正規化されていない
-    for(int i = 0; i < texRes; i++){
-        for(int j = 0; j < texRes; j++){
-            auto index = j + texRes * i;
+    for(int y = 0; y < texRes; y++){
+        for(int x = 0; x < texRes; x++){
+            auto index = x + texRes * y;
             if(index < particleNum){
                 particles.addVertex(ofVec3f(0.0, 0.0, 0.0));
-                particles.addTexCoord(ofVec2f(i, j));
+                particles.addTexCoord(ofVec2f(x, y));
                 particles.addColor(ofFloatColor(1.0, 1.0, 1.0));
             }
         }
@@ -35,9 +41,9 @@ void ofApp::setup(){
     for (int x = 0; x < texRes; x++){
         for (int y = 0; y < texRes; y++){
             int i = texRes * y + x;
-            posDataArr[i*4 + 0] = ofRandom(-1.0,1.0);
-            posDataArr[i*4 + 1] = ofRandom(-1.0,1.0);
-            posDataArr[i*4 + 2] = ofRandom(-1.0,1.0);
+            posDataArr[i*4 + 0] = (float)x/(float)texRes;
+            posDataArr[i*4 + 1] = 0.0;
+            posDataArr[i*4 + 2] = (float)y/(float)texRes;
             posDataArr[i*4 + 3] = 1.0;
         }
     }
@@ -64,34 +70,56 @@ void ofApp::setup(){
     
     //gui
     gui.setup();
-    gui.add(alpha.setup("alpha", 0.0, 0.0, 1.0));
+    gui.add(alpha.setup("value", 0.0, 0.0, 1.0));
     
+     */
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    /*
     ofSetWindowTitle(ofToString(ofGetFrameRate()));
     float time = ofGetElapsedTimef();
+    alpha = fmod(time, 1.0);
     
-    //pingPong.dst->begin();
+    pingPong.dst->begin();
+    ofClear(0);
     updatePos.begin();
     updatePos.setUniform1f("value", alpha);
     updatePos.setUniformTexture("posData", pingPong.src->getTexture(0), 0);
     //updatePos.setUniformTexture("velData", pingPong.src->getTexture(1), 1);
-    //pingPong.src->draw(0.0, 0.0);
+    pingPong.src->draw(0.0, 0.0);
     updatePos.end();
-    //pingPong.dst->end();
+    pingPong.dst->end();
+    
+    pingPong.swap();
+     */
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    updatePos.begin();
-    updatePos.setUniform1f("value",  fmod(ofGetElapsedTimef(), 1.0));
-    updatePos.setUniformTexture("posData", pingPong.src->getTexture(0), 0);
-    pingPong.src->draw(ofGetWidth() - fboSize.x, 0, fboSize.x, fboSize.y);
-    updatePos.end();
-   
-    //pingPong.dst->draw(ofGetWidth() - fboSize.x, fboSize.y, fboSize.x, fboSize.y);
-
+    /*
+    //fbo-debug
+    pingPong.src->draw(ofGetWidth() - fboSize.x, 0.0, fboSize.x, fboSize.y);
+    pingPong.dst->draw(ofGetWidth() - fboSize.x, fboSize.y, fboSize.x, fboSize.y);
+    
     gui.draw();
+    ofDrawBitmapString("particleNum : " + to_string(particleNum), 10.0, 80.0);
+    
+    cam.begin();
+    render.begin();
+    render.setUniformTexture("posTex", pingPong.dst->getTexture(0), 0);
+    render.setUniform2f("screen", ofGetWidth(), ofGetHeight());
+    particles.drawVertices();
+    render.end();
+    cam.end();
+     */
+    
+}
+
+void ofApp::keyPressed(int key){
+    /*
+    updatePos.load("shaders/pass.vert", "shaders/update.frag");
+    render.load("shaders/render");
+     */
 }

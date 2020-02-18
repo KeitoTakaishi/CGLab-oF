@@ -51,7 +51,7 @@ public:
     }
     ofFbo *src;
     ofFbo *dst;
-//private:
+private:
     ofFbo FBOs[2];
     int flag;
 };
