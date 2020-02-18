@@ -8,33 +8,33 @@
 #include "Cell.hpp"
 
 Cell::Cell(){
-    particleId = new int[maxNumParticleIndInCell];
-    numParticle = 0;
+    particleIdInCell = new int[maxNumParticleIndInCell];
+    this->numParticleInCell = 0;
 }
 
 Cell::~Cell(){
-    delete[] particleId;
+    delete[] particleIdInCell;
 }
 
 void Cell::clear() {
-    this->numParticle = 0; // セル内の粒子数をゼロにする
+    this->numParticleInCell = 0; // セル内の粒子数をゼロにする
 }   
 
 int Cell::getNumParticle(){
-    return this->numParticle;
+    return this->numParticleInCell;
 }
 
 
 int Cell::getParticleId(int i){
-    return this->particleId[i];
+    return particleIdInCell[i];
 }
 
 //引数には粒子のidが来る
 int Cell::add(int i){
-    particleId[this->numParticle] = i;
-    this->numParticle++;
+    particleIdInCell[numParticleInCell] = i;
+    numParticleInCell++;
     
-    if(this->numParticle > maxNumParticleIndInCell){
+    if(this->numParticleInCell > maxNumParticleIndInCell){
         cout << "****Particle in cell is Out of Range ****" << endl;
         return -1;
     }

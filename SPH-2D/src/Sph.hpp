@@ -9,6 +9,7 @@
 #define Sph_hpp
 
 #include <iostream>
+#include "ofMain.h"
 #include "Vec.hpp"
 #include "Cell.hpp"
 #include "Params.hpp"
@@ -20,16 +21,18 @@ private:
     vector<ofVec2f> vel;
     vector<ofVec2f> force;
     vector<float> density;
+
     
     int updateCells();
     void getCellId(ofVec2f pos, int2& id);
+    //void getCellId(float2 pos, int2& id);
     void applyDensity();
     void applyForce();
     void updatePosition();
 public:
     Sph(int num);
     ~Sph();
-    void timeStep();
+    int timeStep();
     void preview();
     vector<vector<Cell*>> cells;
 };

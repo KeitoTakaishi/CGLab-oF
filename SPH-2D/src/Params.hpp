@@ -9,25 +9,25 @@
 #define Params_hpp
 
 #include <iostream>
-#include "Vec.hpp"
 #include "ofMain.h"
+#include "Vec.hpp"
 
 const float pi_f = 3.141592653589793f;
 const float numParticles = 4096;
+//const float numParticles = 100;
 const int maxNumParticleIndInCell = 1280;
 
 //物理量
 const float2 gravity = { 0.0f, -0.5f}; // 重力
 const float density0 = 1000.0f; // 流体の密度
-const float pressureStiffness = 20.0f; // 圧力を求める Tait 方程式の係数(初期密度 / (音速*音速) * gamma)
-const float viscosity = 0.3f; // 粘性係数(小さい方がサラサラしている)
+const float pressureStiffness = 200.0f; // 圧力を求める Tait 方程式の係数(初期密度 / (音速*音速) * gamma)
+const float viscosity = 0.4f; // 粘性係数(小さい方がサラサラしている)
 
 //------sph
 //影響半径と初期間隔の関係について
-float dt = 0.01f;
 const float initPSpacing = 0.0055f;
 const float particleMass = 0.00035f;
-
+const float deltaT = 0.01f;
 //------壁に関するparams
 // シミュレーションの範囲（xMin, xMax, yMin, yMax）
 const float simRange[4] = { 0.0f, 1.0f, 0.0f, 1.0f };

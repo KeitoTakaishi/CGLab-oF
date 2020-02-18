@@ -2,15 +2,42 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+    ofSetBackgroundColor(0);
     sph = new Sph(numParticles);
+    //sph->timeStep();
     
     
+    /*
+    int sizeY = 5;
+    int sizeX = 10;
+    vector<vector<float>> v;
+    v.resize(sizeY);
+    for(int i = 0; i < sizeY; i++){
+         v[i].resize(sizeX);
+    }
     
+    for(int i = 0; i < sizeX; i++){
+        for(int j = 0; j < sizeY; j++){
+            v[i][j] = j;
+        }
+    }
+    
+    for(int i = 0; i < sizeY; i++){
+        for(int j = 0; j < sizeX; j++){
+            cout << v[i][j] << endl;
+        }
+        cout << "---------" << endl;
+    }
+     */
+   
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    sph->timeStep();
+    int cellStatus = 0;
+    if (cellStatus == 0) { // エラーがなければ
+        cellStatus = sph->timeStep(); // SPH の計算を 1 フレーム進める
+    }
 }
 
 //--------------------------------------------------------------
@@ -23,7 +50,9 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
+    if(key == 'c'){
+        //sph->timeStep();
+    }
 }
 
 //--------------------------------------------------------------

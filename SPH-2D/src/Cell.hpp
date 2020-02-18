@@ -14,8 +14,8 @@
 
 class Cell{
 private:
-    int* particleId;
-    int numParticle;
+    int* particleIdInCell;
+    int numParticleInCell;
 public:
     Cell();
     ~Cell();

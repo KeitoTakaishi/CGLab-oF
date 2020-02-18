@@ -265,13 +265,6 @@
 			name = ofxGui;
 			sourceTree = "<group>";
 		};
-		6948EE371B920CB800B5AC1A /* local_addons */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = local_addons;
-			sourceTree = "<group>";
-		};
 		A763ED608B35AE3310251DEE /* src */ = {
 			isa = PBXGroup;
 			children = (
@@ -598,7 +591,6 @@
 				E4B69E1C0A3A1BDC003C02F2 /* src */,
 				E42962AA2163EDD300A6A9E2 /* openFrameworks */,
 				BB4B014C10F69532006C3DED /* addons */,
-				6948EE371B920CB800B5AC1A /* local_addons */,
 				E4B69B5B0A3A1756003C02F2 /* SPH-2DDebug.app */,
 			);
 			sourceTree = "<group>";
