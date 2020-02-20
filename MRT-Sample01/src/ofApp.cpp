@@ -3,7 +3,7 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetBackgroundColor(0);
-    res = 4;
+    res = 256;
     //internal format
     pingPong.allocate(res, res, GL_RGBA32F, 3);
     
@@ -111,12 +111,10 @@ void ofApp::keyPressed(int key){
 void ofApp::timeStep(){
     //mrt------
     float t = ofGetElapsedTimef();
-    
     pingPong.dst->begin();
     ofClear(0);
     mrtShader.begin();
     pingPong.src->activateAllDrawBuffers();
-    pingPong.dst->activateAllDrawBuffers();
     mrtShader.setUniform1f("time", t);
     previewShader.setUniformTexture("tex0", pingPong.dst->getTexture(0), 0);
     previewShader.setUniformTexture("tex1", pingPong.dst->getTexture(1), 1);
