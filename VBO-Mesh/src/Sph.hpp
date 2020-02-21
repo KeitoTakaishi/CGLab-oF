@@ -17,12 +17,20 @@ class Sph{
 public:
     Sph(int _particleNum);
     ~Sph();
+    void calcDensity();
+    void calcForce();
     void timeStep();
+    void preview();
+    pingPongBuffer pingPong;
+    
+    ofShader calcDensityShader, calcForceShader, renderShader;
+    
 private:
     int particleNum;
+    int texRes;
     ofVboMesh particle;
-    pingPongBuffer pingPong;
-    ofShader render, update;
+    
+   
     //bufferValues(pingPongで保持しないといけない値)
 };
 

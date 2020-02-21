@@ -2,86 +2,26 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    ofSetVerticalSync(false);
+    ofSetFrameRate(30);
     ofSetBackgroundColor(0.0);
-    ofEnableBlendMode(OF_BLENDMODE_ADD);
+    //ofEnableBlendMode(OF_BLENDMODE_ADD);
     cam.setupPerspective();
-
-    particleNum = Params::particleNum;
-    cout << particleNum << endl;
-    
-    
     sph = new Sph(Params::particleNum);
-    /*
-    texRes = (int)ceil(sqrt(particleNum));
+   
     
-    
-    //shader load
-    //render.load("shaders/render");
-    updatePos.load("shaders/pass.vert", "shaders/update.frag");
-    render.load("shaders/render");
-    
-    //vbo
-    //ofDisableArbTexを使用していないのでがてテクセルが正規化されていない
-    for(int y = 0; y < texRes; y++){
-        for(int x = 0; x < texRes; x++){
-            auto index = x + texRes * y;
-            if(index < particleNum){
-                particles.addVertex(ofVec3f(0.0, 0.0, 0.0));
-                particles.addTexCoord(ofVec2f(x, y));
-                particles.addColor(ofFloatColor(1.0, 1.0, 1.0));
-            }
-        }
-    }
-    //pingPongBufferの生成
-    //colorBufferを用意、pos, vel
-    pingPong.allocate(texRes, texRes, GL_RGBA32F, 2);
-    
-    float* posDataArr = new float[texRes * texRes * 4];
-    for (int x = 0; x < texRes; x++){
-        for (int y = 0; y < texRes; y++){
-            int i = texRes * y + x;
-            posDataArr[i*4 + 0] = (float)x/(float)texRes;
-            posDataArr[i*4 + 1] = 0.0;
-            posDataArr[i*4 + 2] = (float)y/(float)texRes;
-            posDataArr[i*4 + 3] = 1.0;
-        }
-    }
-    
-    float* velDataArr = new float[texRes * texRes * 4];
-    for (int x = 0; x < texRes; x++){
-        for (int y = 0; y < texRes; y++){
-            int i = texRes * y + x;
-            velDataArr[i*4 + 0] = ofRandom(-1.0,1.0);
-            velDataArr[i*4 + 1] = ofRandom(-1.0,1.0);
-            velDataArr[i*4 + 2] = ofRandom(-1.0,1.0);
-            velDataArr[i*4 + 3] = 1.0;
-        }
-    }
-    
-    //fboと紐付けを行う, fbo内部にtexture
-    //positionData
-    pingPong.src->getTexture(0).loadData(posDataArr, texRes, texRes, GL_RGBA);
-    pingPong.src->getTexture(1).loadData(velDataArr, texRes, texRes, GL_RGBA);
-    delete [] posDataArr;
-    delete [] velDataArr;
-    
-    
-    
-    //gui
-    gui.setup();
-    gui.add(alpha.setup("value", 0.0, 0.0, 1.0));
-    
-     */
+    debugShader.load("shaders/debug");
+    plane.set(planeSize.x, planeSize.y, 10, 10);
+    plane.mapTexCoordsFromTexture(sph->pingPong.src->getTexture(0));
+    vbo = plane.getMesh();
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    /*
-    ofSetWindowTitle(ofToString(ofGetFrameRate()));
+    ofSetWindowTitle(to_string(ofGetFrameRate()));
     float time = ofGetElapsedTimef();
+    //sph->timeStep();
+    /*
     alpha = fmod(time, 1.0);
-    
     pingPong.dst->begin();
     ofClear(0);
     updatePos.begin();
@@ -94,32 +34,51 @@ void ofApp::update(){
     
     pingPong.swap();
      */
+    //sph->timeStep();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    /*
-    //fbo-debug
-    pingPong.src->draw(ofGetWidth() - fboSize.x, 0.0, fboSize.x, fboSize.y);
-    pingPong.dst->draw(ofGetWidth() - fboSize.x, fboSize.y, fboSize.x, fboSize.y);
-    
-    gui.draw();
-    ofDrawBitmapString("particleNum : " + to_string(particleNum), 10.0, 80.0);
-    
+    //debug--------------------
     cam.begin();
-    render.begin();
-    render.setUniformTexture("posTex", pingPong.dst->getTexture(0), 0);
-    render.setUniform2f("screen", ofGetWidth(), ofGetHeight());
-    particles.drawVertices();
-    render.end();
+    debugShader.begin();
+    for(int i = 0; i < 4; i++){
+        ofMatrix4x4 modelMatrix;
+        modelMatrix.translate(0.0, -planeSize.x/2.0, 0.0);
+        modelMatrix.translate(ofGetWidth()/2.0-planeSize.x, ofGetHeight()/2.0-i*planeSize.x*1.25, 0);//offSet
+        ofMatrix4x4 viewMatrix;
+        viewMatrix = ofGetCurrentViewMatrix();
+        ofMatrix4x4 projectionMatrix;
+        projectionMatrix = cam.getProjectionMatrix();
+        debugShader.setUniformMatrix4f("model", modelMatrix);
+        debugShader.setUniformMatrix4f("view", viewMatrix);
+        debugShader.setUniformMatrix4f("projection", projectionMatrix);
+        debugShader.setUniformTexture("tex" + to_string(0), sph->pingPong.src->getTexture(i), 0);
+        vbo.draw();
+    }
+    debugShader.end();
     cam.end();
+    
+    /*
+    cout << "--------------" << endl;
+    cout << sph->pingPong.src->getTexture(0).getTextureData().textureID << endl;
+    cout << sph->pingPong.src->getTexture(1).getTextureData().textureID << endl;
+    cout << sph->pingPong.src->getTexture(2).getTextureData().textureID << endl;
+    cout << sph->pingPong.src->getTexture(3).getTextureData().textureID << endl;
      */
     
+//    cam.begin();
+//    sph->preview();
+//    cam.end();
 }
 
 void ofApp::keyPressed(int key){
-    /*
-    updatePos.load("shaders/pass.vert", "shaders/update.frag");
-    render.load("shaders/render");
-     */
+    if(key == 's'){
+        cout << "shader load" << endl;
+        sph->calcDensityShader.load("shaders/calcDensity");
+        //sph->calcForcShader.load("shaders/calcForce");
+        //sph->renderShader().load("shaders/render");
+    }else if(key == 'c'){
+        sph->timeStep();
+    }
 }

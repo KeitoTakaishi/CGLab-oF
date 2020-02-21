@@ -12,27 +12,19 @@ class ofApp : public ofBaseApp{
 		void update();
 		void draw();
         void keyPressed(int key);
-    
-
-    
-    ofShader render, updatePos;
-    ofVboMesh particles;
-    pingPongBuffer pingPong;
     ofEasyCam cam;
     
-    ofVec3f emitterPos, prevEmitterPos;
-    int particleNum, texRes;
-    bool showTex;
-    
     //Gui
-    ofVec2f fboSize = ofVec2f(150, 150);
     ofxPanel gui;
     ofxFloatSlider alpha;
     
-    
+    ofShader debugShader;
+    ofVec2f planeSize = ofVec2f(100, 100);
+    ofVec2f planeRes = ofVec2f(100, 100);
+    ofPlanePrimitive plane;
+    ofVboMesh vbo;
     //--------------------
     Sph* sph;
-    
 };
 
 

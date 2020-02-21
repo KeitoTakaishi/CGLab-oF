@@ -11,6 +11,7 @@ out vec4 vFragColor;
 
 void main() {
     //vFragColor = vColor;
-    vec4 col = texture(posTex, vTexCoord);
+    //vec4 col = texture(posTex, vTexCoord);
+    vec4 col = vec4(1.0);
     vFragColor = col;
 }

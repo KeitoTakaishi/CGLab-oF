@@ -19,7 +19,7 @@ namespace Params{
     
     
     const float pi_f = 3.141592653589793f;
-    const int particleNum = 2048;
+    const int particleNum = 64 * 64;
     const int maxPArticleNumInCell = 1024;
 
 
@@ -49,6 +49,9 @@ namespace Params{
     
     //-------kernel係数
     const float h = 2.5f * cellSize.x;
+    const float densityCoeff = particleMass * 315.0f / (64.0f * pi_f * powf(h, 9.0f)); // 密度計算の重み3D
+    const float gradPressureCoeff = particleMass * (-45.0f) / (pi_f * powf(h, 6.0f)); // 圧力項計算の重み3D
+    const float lapViscosityCoeff = particleMass * viscosity * 45.0f / (pi_f * powf(h, 6.0f)); // 粘性項計算の係数3D
 
 }
 #endif /* Params_hpp */
