@@ -3,7 +3,8 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetFrameRate(60);
-    ofSetBackgroundColor(100.0);
+    ofSetBackgroundColor(0.0);
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
     //ofEnableBlendMode(OF_BLENDMODE_ADD);
     cam.setupPerspective();
     sph = new Sph(Params::particleNum);
@@ -22,9 +23,9 @@ void ofApp::update(){
     
     if(ofGetFrameNum() % 10 == 0){
         cout << "calc" << endl;
-        sph->timeStep();
+        //sph->timeStep();
     }
-    //sph->timeStep();
+    sph->timeStep();
 }
 
 //--------------------------------------------------------------

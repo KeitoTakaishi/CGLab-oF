@@ -18,7 +18,9 @@ out vec2 vTexCoord;
 
 void main() {
   vec4 pixPos = texture(posTex, texcoord);
-  pixPos.xyz *= 1.0;
+  pixPos.x -= 0.25;
+  pixPos.y -= 0.25;
+  pixPos.xyz *= 5.0;
   //pixPos = position;
   //vColor = vec4(pixPos.xy, 1.0 - pixPos.y, 1.0);
 

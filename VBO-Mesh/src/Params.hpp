@@ -19,7 +19,7 @@ namespace Params{
     
     
     const float pi_f = 3.141592653589793f;
-    const int particleNum = 64 * 64;
+    const int particleNum = 256 * 256;
     const int maxPArticleNumInCell = 1024;
 
 

@@ -20,19 +20,21 @@ Sph::Sph(int _particleNum){
     int ch = 3;
     float* pos;
     float* vel;
-    //float* force;
     float* density;
+    
     pos = new float [texRes * texRes * ch];
     vel = new float [texRes * texRes * ch];
-    //force = new float [texRes * texRes * ch];
     density = new float [texRes * texRes * ch];
    
     for(int y = 0; y < texRes; y++){
         for(int x = 0; x < texRes; x++){
             auto i = x + texRes * y;
             pos[i * ch] = x * Params::cellSize.x;
-            pos[i * ch + 1] = y * Params::cellSize.y;
+            pos[i * ch + 1] = y * Params::cellSize.x;
             pos[i * ch + 2] = 0.0;
+//            pos[i * ch] = ofRandom(1.0);
+//            pos[i * ch + 1] = ofRandom(1.0);
+            
         }
     }
     pingPong.src->getTexture(0).loadData(pos, texRes, texRes, GL_RGB);
@@ -49,19 +51,6 @@ Sph::Sph(int _particleNum){
     }
     pingPong.src->getTexture(1).loadData(vel, texRes, texRes, GL_RGB);
     delete[] vel;
-    
-//    for(int y = 0; y < texRes; y++){
-//        for(int x = 0; x < texRes; x++){
-//            auto i = x + texRes * y;
-//            force[i * ch + 0] = 0.0;
-//            force[i * ch + 1] = 0.0;
-//            force[i * ch + 2] = 0.0;
-//        }
-//    }
-//    pingPong.src->getTexture(2).loadData(force, texRes, texRes, GL_RGB);
-//    delete[] force;
-    
-    
     
     for(int y = 0; y < texRes; y++){
         for(int x = 0; x < texRes; x++){
@@ -81,9 +70,9 @@ Sph::Sph(int _particleNum){
         for(int x = 0; x < texRes; x++){
             auto index = x + texRes * y;
             //cout << x << ", " << y << endl;
-            particle.addVertex(ofVec3f(x * 2.0, y * 2.0, 0.0));
+            particle.addVertex(ofVec3f(x * Params::cellSize.x, y * Params::cellSize.x, 0.0));
             particle.addTexCoord(ofVec2f(x, y));
-            particle.addColor(ofFloatColor(1.0, 1.0, 1.0));
+            particle.addColor(ofFloatColor(0.0, 1.0, 0.75));
         }
     }
     
@@ -106,15 +95,18 @@ void Sph::calcDensity(){
     ofClear(0);
     calcDensityShader.begin();
     pingPong.src->activateAllDrawBuffers();
-    pingPong.dst->activateAllDrawBuffers();
+    //pingPong.dst->activateAllDrawBuffers();
     calcDensityShader.setUniformTexture("posData",      pingPong.src->getTexture(0), 0);
     calcDensityShader.setUniformTexture("velData",      pingPong.src->getTexture(1), 1);
     calcDensityShader.setUniformTexture("densityData",  pingPong.src->getTexture(2), 2);
     calcDensityShader.setUniform1f("texRes", float(texRes));
-    calcDensityShader.setUniform1f("h2", Params::h * Params::h);
+    calcDensityShader.setUniform1f("h", Params::h);
     calcDensityShader.setUniform1f("densityCoeff", Params::densityCoeff);
+    
     pingPong.src->draw(0.0, 0.0);
+    
     calcDensityShader.end();
+    
     pingPong.dst->end();
     pingPong.swap();
 }
@@ -125,12 +117,13 @@ void Sph::calcForce(){
     ofClear(0);
     calcForceShader.begin();//shader------
     pingPong.src->activateAllDrawBuffers();
-    pingPong.dst->activateAllDrawBuffers();
+    //pingPong.dst->activateAllDrawBuffers();
     calcForceShader.setUniformTexture("posData",      pingPong.src->getTexture(0), 0);
     calcForceShader.setUniformTexture("velData",      pingPong.src->getTexture(1), 1);
     calcForceShader.setUniformTexture("densityData",  pingPong.src->getTexture(2), 2);
     //values
     calcForceShader.setUniform1f("texRes", float(texRes));
+    
     calcForceShader.setUniform1f("h", Params::h);
     calcForceShader.setUniform1f("gradPressureCoeff", Params::gradPressureCoeff);
     calcForceShader.setUniform1f("lapViscosityCoeff", Params::lapViscosityCoeff);
@@ -138,6 +131,7 @@ void Sph::calcForce(){
     pingPong.src->draw(0.0, 0.0);
     
     calcForceShader.end();//shader------
+    
     pingPong.dst->end();//fbo------
     pingPong.swap();
 }
