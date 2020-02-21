@@ -18,7 +18,7 @@ out vec2 vTexCoord;
 
 void main() {
   vec4 pixPos = texture(posTex, texcoord);
-  pixPos.xyz *= 10.0;
+  pixPos.xyz *= 1.0;
   //pixPos = position;
   //vColor = vec4(pixPos.xy, 1.0 - pixPos.y, 1.0);
 
@@ -26,7 +26,7 @@ void main() {
   pixPos.y = pixPos.y * screen.y - screen.y / 2;
   pixPos.z = pixPos.z * screen.x - screen.x / 2;
 
-
+  pixPos.y *= -1.0;
   vTexCoord = texcoord;
-  gl_Position = modelViewProjectionMatrix * pixPos * 1000.0;
+  gl_Position = modelViewProjectionMatrix * pixPos;
 }
