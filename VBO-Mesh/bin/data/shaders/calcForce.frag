@@ -7,8 +7,7 @@ uniform sampler2DRect forceData;
 uniform sampler2DRect densityData;
 
 uniform float texRes;
-uniform float h2;
-uniform float densityCoeff;
+uniform float h;
 uniform float gradPressureCoeff;
 uniform float lapViscosityCoeff;
 
@@ -23,125 +22,86 @@ layout (location = 3) out vec4 vFragColor3;
 //const
 const float gamma = 7.0;
 const float density0 = 1000.0;
-const float pressureStiffness = 200.0;
 const float dt = 0.01;
+const float pressureStiffness = 200.0;
+const vec3 gravity = vec3(0.0, 0.5, 0.0);
+const float wallStiffness = 3000.0;
+vec3[4] wall = vec3[](
+    vec3(1.0f, 0.0f, 0.0f),
+    vec3(0.0f, 1.0f, 0.0f),
+    vec3(-1.0f, 0.0f, 1.0f),
+    vec3(0.0f, -1.0f, 1.0f)
+  );
 //world
-float density;
 vec3 pos;
 vec3 vel;
 vec3 force;
 
 
 void calcForce(){
-  float press1;
-  press1 = pressureStiffness * max(pow(density/ density0, gamma) - 1.0f, 0.0f);
-  vec2 acceleration = vec2(0.0, 0.0);
+  vec2 iid = vTexCoord;
+  vec3 i_pos = texture(posData, vTexCoord).xyz;
+  vec3 i_vel = texture(velData, vTexCoord).xyz;
+  float density = texture(densityData, vTexCoord).x;
 
-  float iP = vTexCoord.x + vTexCoord.y * texRes;
+  float press1 = pressureStiffness * max(pow(density/ density0, gamma) - 1.0f, 0.0f);
+  vec3 acceleration = vec3(0.0, 0.0, 0.0);
+
+  //search all
   for(float i = 0.0; i < texRes; i+=1.0){
     for(float j = 0.0; j < texRes; j+=1.0){
-        vec2 uv = vec2(j, i);
-        vec3 p = texture(posData, uv).xyz;
-        vec3 dis = pos - p;
-        float dis2 = dot(dis, dis);
+        vec2 jid = vec2(j, i);
+        vec3 j_pos = texture(posData, jid).xyz;//target_pos
+        vec3 diff = j_pos - i_pos;
+        float dis2 = dot(diff, diff);
 
-        float jP = i + j * texRes;
 
-        if (dis2 < h2 && iP != jP){
+      if (dis2 < (h*h) && dot(iid, jid) != 1.0){
+        float press2 = pressureStiffness * max(pow(density / density0, gamma) - 1.0f, 0.0f);
+        float dist = sqrt(dis2);
+        float avg_press = 0.5f * (press1 + press2);
+        float grad_press_mag = gradPressureCoeff * avg_press / density * (h - dist) * (h - dist);
 
-          float press2 = pressureStiffness * max(pow(density[jP] / density0, gamma) - 1.0f, 0.0f);
-          float dist = sqrtf(dis2);
-          float avgPressure = 0.5f * (pPressure1 + pPressure2);
-          float gradPressureMagnitude = gradPressureCoeff * avgPressure / density[jP] * (h - dist) * (h - dist);
+        acceleration.x += grad_press_mag * diff.x;
+        acceleration.y += grad_press_mag * diff.y;
 
-          acceleration.x += gradPressureMagnitude * diff.x;
-          acceleration.y += gradPressureMagnitude * diff.y;
+        // 粘性項による加速度
+        vec3 j_vel = texture(velData, jid).xyz;
+        vec2 velDiff = vec2(j_vel.x-i_vel.x, j_vel.y-i_vel.y);
 
-          // 粘性項による加速度
-          float2 velDiff;
-          velDiff.x = vel[jP].x - vel[iP].x;
-          velDiff.y = vel[jP].y - vel[iP].y;
-          float viscMagnitude;
-          viscMagnitude = lapViscosityCoeff / density[jP] * (h - dist);
-          acceleration.x += viscMagnitude * velDiff.x;
-          acceleration.y += viscMagnitude * velDiff.y;
-
-        }
-
+        float j_density = texture(densityData, jid).x;
+        float viscMagnitude;
+        viscMagnitude = lapViscosityCoeff / j_density * (h - dist);
+        acceleration.x += viscMagnitude * velDiff.x;
+        acceleration.y += viscMagnitude * velDiff.y;
       }
     }
-}
-
-
-/*
-void Sph::updatePosition(){
-    for(int iP = 0; iP < numParticles; iP++){
-        ofVec2f position, velocity, acceleration;
-        position = ofVec2f(pos[iP].x, pos[iP].y);
-        velocity = ofVec2f( vel[iP].x,  vel[iP].y);
-        acceleration = ofVec2f( force[iP].x, force[iP].y);
-
-        // 壁による加速度
-        for (int iW = 0; iW < 4; iW++) {
-            float2 normal;
-            normal.x = vPlanes[iW].x;
-            normal.y = vPlanes[iW].y;
-
-            // 壁に食い込んだ距離（食い込んでいない場合は 0 とする）
-            float dist;
-            dist = -fmin(position.x * normal.x + position.y * normal.y + vPlanes[iW].z, 0.0f);
-            // 壁に食い込んだ距離に応じて反対側に加速度を加える
-            acceleration.x += dist * wallStiffness * normal.x;
-            acceleration.y += dist * wallStiffness * normal.y;
-        }
-
-        // 重力による加速度
-
-        acceleration.x += gravity.x;
-        acceleration.y += gravity.y;
-
-        // 速度と位置の更新
-        velocity += acceleration * deltaT;
-        position += velocity * deltaT;
-
-        // 更新された速度と位置を配列に格納
-
-        pos[iP].x = position.x;
-        pos[iP].y = position.y;
-
-        vel[iP].x = velocity.x;
-        vel[iP].y = velocity.y;
-
-    }
-    return;
-}
-
-*/
-void main(void){
-  //vFragColor0 = pos;
-  //float phi = value + pos.x * pos.y;
-  //vFragColor0.g = sin(value + pos.x * pos.y);
-  //vFragColor1 = vec4(1.0, 0.0, 0.0, 1.0);
-
-  vec3 pos = texture(posData, vTexCoord).xyz;
-  vec3 vel = texture(velData, vTexCoord).xyz;
-  vec3 force = texture(forceData, vTexCoord).xyz;
-  calcDensity();
-  //calcForce();
-
-
-
-  pos.x += dt*1000.0;
-  if(pos.x > 1000.0){
-    pos.x = 0.0;
+  }
+  for (int iW = 0; iW < 4; iW+=1) {
+      vec2 normal = vec2(wall[iW].x, wall[iW].y);
+      // 壁に食い込んだ距離（食い込んでいない場合は 0 とする）
+      float dist;
+      dist = -min(i_pos.x * normal.x + i_pos.y * normal.y + wall[iW].z, 0.0f);
+      // 壁に食い込んだ距離に応じて反対側に加速度を加える
+      acceleration.x += dist * wallStiffness * normal.x;
+      acceleration.y += dist * wallStiffness * normal.y;
   }
 
 
-  //vFragColor0 = vec4(vec3(1.0, 0.0, 0.0), 1.0);
-  //vFragColor1 = vec4(vec3(0.0, 1.0, 0.0), 1.0);
-  //vFragColor2 = vec4(vec3(0.0, 0.0, 1.0), 1.0);
-  vFragColor0 = vec4(vec3(pos), 1.0);
-  vFragColor1 = vec4(texture(velData, vTexCoord).xyz, 1.0);
-  vFragColor2 = vec4(texture(forceData, vTexCoord).xyz, 1.0);
-  vFragColor3 = vec4(vec3(density), 1.0);
+  acceleration.x += gravity.x;
+  acceleration.y += gravity.y;
+
+  vec3 v = i_vel + acceleration * dt;
+  vec3 p = v * dt;
+
+  vFragColor0 = vec4(vec3(p), 1.0);
+  vFragColor1 = vec4(vec3(v), 1.0);
+  vFragColor2 = vec4(0.0, 0.0, 0.0, 1.0);
+  vFragColor3 = vec4(0.0, 0.0, 0.0, 1.0);
+}
+
+
+void main(void){
+
+  calcForce();
 }

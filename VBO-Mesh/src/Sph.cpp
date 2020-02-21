@@ -90,7 +90,7 @@ Sph::Sph(int _particleNum){
 
     //shader
     calcDensityShader.load("shaders/calcDensity");
-    //calcForceShader.load("shaders/calcForce");
+    calcForceShader.load("shaders/calcForce");
     renderShader.load("shaders/render");
 }
 
@@ -106,7 +106,7 @@ void Sph::calcDensity(){
     ofClear(0);
     calcDensityShader.begin();
     pingPong.src->activateAllDrawBuffers();
-    pingPong.dst->activateAllDrawBuffers();
+    //pingPong.dst->activateAllDrawBuffers();
     calcDensityShader.setUniformTexture("posData", pingPong.src->getTexture(0), 0);
     calcDensityShader.setUniformTexture("velData", pingPong.src->getTexture(1), 1);
     calcDensityShader.setUniformTexture("forceData", pingPong.src->getTexture(2), 2);
@@ -122,7 +122,25 @@ void Sph::calcDensity(){
 
 
 void Sph::calcForce(){
+    pingPong.dst->begin();//fbo------
+    ofClear(0);
+    calcForceShader.begin();//shader------
+    pingPong.src->activateAllDrawBuffers();
+    calcDensityShader.setUniformTexture("posData", pingPong.src->getTexture(0), 0);
+    calcDensityShader.setUniformTexture("velData", pingPong.src->getTexture(1), 1);
+    calcDensityShader.setUniformTexture("forceData", pingPong.src->getTexture(2), 2);
+    calcDensityShader.setUniformTexture("densityData", pingPong.src->getTexture(3), 3);
+    //values
+    calcDensityShader.setUniform1f("texRes", float(texRes));
+    calcDensityShader.setUniform1f("h", Params::h);
+    calcDensityShader.setUniform1f("gradPressureCoeff", Params::gradPressureCoeff);
+    calcDensityShader.setUniform1f("lapViscosityCoeff", Params::lapViscosityCoeff);
     
+    pingPong.src->draw(0.0, 0.0);
+    
+    calcForceShader.end();//shader------
+    pingPong.dst->end();//fbo------
+    pingPong.swap();
 }
 
 void Sph::timeStep(){
@@ -130,7 +148,7 @@ void Sph::timeStep(){
     //shaderを用いて更新
     
     calcDensity();
-    //calcForce();
+    calcForce();
    
     /*
     pingPong.dst->begin();
@@ -158,9 +176,9 @@ void Sph::timeStep(){
 
 
 void Sph::preview(){
-//    renderShader.begin();
-//    renderShader.setUniform2f("screen", 100.0, 100.0);
-//    renderShader.setUniformTexture("posTex", pingPong.dst->getTexture(0), 0);
-//    particle.drawVertices();
-//    renderShader.end();
+    renderShader.begin();
+    renderShader.setUniform2f("screen", 100.0, 100.0);
+    renderShader.setUniformTexture("posTex", pingPong.dst->getTexture(0), 0);
+    particle.drawVertices();
+    renderShader.end();
 }

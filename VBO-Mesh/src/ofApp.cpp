@@ -58,26 +58,18 @@ void ofApp::draw(){
     }
     debugShader.end();
     cam.end();
-    
-    /*
-    cout << "--------------" << endl;
-    cout << sph->pingPong.src->getTexture(0).getTextureData().textureID << endl;
-    cout << sph->pingPong.src->getTexture(1).getTextureData().textureID << endl;
-    cout << sph->pingPong.src->getTexture(2).getTextureData().textureID << endl;
-    cout << sph->pingPong.src->getTexture(3).getTextureData().textureID << endl;
-     */
-    
-//    cam.begin();
-//    sph->preview();
-//    cam.end();
+        
+    cam.begin();
+    sph->preview();
+    cam.end();
 }
 
 void ofApp::keyPressed(int key){
     if(key == 's'){
         cout << "shader load" << endl;
         sph->calcDensityShader.load("shaders/calcDensity");
-        //sph->calcForcShader.load("shaders/calcForce");
-        //sph->renderShader().load("shaders/render");
+        sph->calcForceShader.load("shaders/calcForce");
+        sph->renderShader.load("shaders/render");
     }else if(key == 'c'){
         sph->timeStep();
     }
