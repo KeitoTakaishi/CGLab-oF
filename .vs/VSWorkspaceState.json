@@ -1,0 +1,11 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\StamFluid",
+    "\\StamFluid\\bin",
+    "\\StamFluid\\bin\\data",
+    "\\StamFluid\\bin\\data\\shaders"
+  ],
+  "SelectedNode": "\\StamFluid\\bin\\data\\shaders\\preview.vert",
+  "PreviewInSolutionExplorer": false
+}
