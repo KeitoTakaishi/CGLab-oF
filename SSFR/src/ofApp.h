@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
-
+#include "ofxGui.h"
 class ofApp : public ofBaseApp{
 
 	public:
@@ -11,10 +11,20 @@ class ofApp : public ofBaseApp{
 
 		void keyPressed(int key);
 		
-		ofShader shader;
+		ofShader particle;
+		ofShader depthPass;
+		ofShader blurPass;
+		ofShader calcNormalPass;
+		
+		vector<ofVec3f> vertices;
 		ofVboMesh vbo;
 		ofEasyCam cam;
 		int particleNum;
-		ofFbo depthPass;
-		
+		ofFbo depthFbo;
+		ofFbo blurFbo1, blurFbo2;
+		ofFbo calcNormalFbo;
+
+		ofxFloatSlider blurScale;
+		ofxFloatSlider blurDepthFallOff;
+		ofxPanel gui;
 };
