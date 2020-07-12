@@ -1,4 +1,5 @@
 #version 150
+precision highp float;
 uniform sampler2DRect depthTex;
 uniform vec2 direction;
 uniform float blurScale;
@@ -9,16 +10,24 @@ out vec4 fragColor;
 
 void main(){
     vec2 uv = vTexCoord;
-    float depth = texture(depthTex, uv).r;
+    float depth = texture(depthTex, uv ).r;
     
     float sum = 0.0;
     float wsum = 0.0;
 
     vec2 blurDir = vec2(direction);
     vec4 color = vec4(0.0);
-    int N = 16;
-    for(int i = -N; i < N; i++){
-        float sampleDepth = texture(depthTex, uv + vec2(direction.x, direction.y) * i ).r;
+
+   
+    float N = 64;
+    float skip = 1.0;
+    for(float i = -N; i <= N; i+=skip){
+        //uv = uv + vec2(direction.x, direction.y) * i;
+        //uv.x = uv.x + direction.x * i;
+        //uv.y = uv.y + direction.y * i;
+
+        float sampleDepth = texture(depthTex, uv + vec2(direction.x, direction.y) * i).r;
+        //float sampleDepth = texture(depthTex, uv).r;
 
         float r = blurScale * i;
         //float r = 0.4 * i;
@@ -34,11 +43,13 @@ void main(){
 
     if(sum > 0.0) sum /= wsum;
 
-    if(depth > 1.0 || depth < 0.0001){
+    
+    if(depth > 1.0 || depth < 0.001){
         fragColor = vec4(vec3(0.0), 1.0);
     }else{
         fragColor = vec4(vec3(sum), 1.0);
     }
+    
     fragColor = vec4(vec3(sum), 1.0);
     //fragColor = vec4(vec3(depth), 1.0);
 }

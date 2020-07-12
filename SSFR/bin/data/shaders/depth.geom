@@ -40,6 +40,10 @@ void main(){
         vec4 clip = modelViewProjectionMatrix * gl_in[0].gl_Position;
         //space in w
         vec4 particlePos = (invViewMatrix * (invpProjectionMatrix * clip));
+
+
+        //g_posはカメラから見て(1, 1), (-1, 1)とかなので
+        //invViewMatrixの変換でワールド座標へ変換される
         vec4 wPos = (invViewMatrix * vec4(g_pos[i].xyz * size, 0.0)) + particlePos;
         //wPos.w = 1.0;
         gl_Position = projectionMatrix * viewMatrix * wPos;
@@ -47,8 +51,6 @@ void main(){
         vTexCoord = g_tex[i];
         EmitVertex();
     }
-    
-
 
     EmitVertex();
     EndPrimitive();

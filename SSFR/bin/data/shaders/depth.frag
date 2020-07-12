@@ -27,9 +27,11 @@ void main() {
         discard;
     }
     normal.z = sqrt(1.0 - radius_sq);
+    normal.z = normal.x * 2.0 - 1.0;
     vec4 viewPos = vec4(vpos.xyz + normalize(normal) * size,  1.0);
 	vec4 screenSpacePos =  projectionMatrix * viewPos;
     float depth = screenSpacePos.z / screenSpacePos.w;
-    depth = LinearizeDepth(depth);
+    //depth = LinearizeDepth(depth);
+
     fragColor = vec4(vec3(depth), 1.0);
 }
