@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<group>
+	<CullingMode>1</CullingMode>
+	<nearClip>20</nearClip>
+	<farClip>1000</farClip>
+	<radius>300</radius>
+	<thicknessCoef>40.7685</thicknessCoef>
+</group>
