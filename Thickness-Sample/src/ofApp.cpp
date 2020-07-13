@@ -6,7 +6,8 @@ void ofApp::setup(){
 	modelMesh = model.getMesh(0);
 	
 	gui.setup();
-	gui.add(cull.setup("CullingMode", cullMode));	
+	gui.add(cull.setup("CullingMode", true));
+	gui.add(debugMode.setup("DebugMode", false));
 	gui.add(nearClip.setup("nearClip", 20.0, 0.1, 500.0));
 	gui.add(farClip.setup("farClip", 1000.0, 100.0, 5000.0));
 	gui.add(radius.setup("radius", 300, 100.0, 1000.0));
@@ -33,7 +34,7 @@ void ofApp::setup(){
 		spherees.push_back(s);
 	}
 	//-----------------------
-	box.set(1000);
+	
 
 	ofSetFrameRate(300);
 	ofSetVerticalSync(false);
@@ -42,6 +43,7 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+	//box.set(farClip);
 	ofSetWindowTitle(to_string(ofGetFrameRate()));
 	cam.setNearClip(nearClip);
 	cam.setFarClip(farClip);
@@ -53,95 +55,128 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 	ofBackground(0);
-	
 
-	
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
+	if (!debugMode) {
+		//1st pass,とりあえずFboに背面までのdepthを書き込む
+		//glCullFace(GL_FRONT);
 
-	//1st pass,とりあえずFboに背面までのdepthを書き込む
-	glCullFace(GL_FRONT);
-	
-	backRenderBuffer.begin();
-	ofClear(0);
-	cam.begin();
-	thichnessShader.begin();
-	thichnessShader.setUniform1f("geomMode", 0.0);
-	thichnessShader.setUniform2f("camPrames", ofVec2f(nearClip, farClip));
-	
-	createBox();
-	ofPushMatrix();
-	ofTranslate(0.0, -150.0, 0.0);
-	modelMesh.draw();
-	ofPopMatrix();
+		backRenderBuffer.begin();
+		ofClear(0);
+		//glClearDepth(.0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	cam.end(); 
-	thichnessShader.end();
-	backRenderBuffer.end();
-	
-		
-	
-	//2nd pass
-	//drawFrontFace(表面のレンダリングかつDepthTestは通常)
-	glCullFace(GL_BACK);
-	//glDepthFunc(GL_LESS);
-	
-	frontRenderBuffer.begin();
-	ofClear(0);
-	cam.begin();
-	thichnessShader.begin();
-	thichnessShader.setUniform1f("geomMode", 0.0);
-	thichnessShader.setUniform2f("camPrames", ofVec2f(nearClip, farClip));
-	createBox();
-	ofPushMatrix();
-	ofTranslate(0.0, -150.0, 0.0);
-	modelMesh.draw();
-	ofPopMatrix();
-	cam.end();
-	thichnessShader.end();
-	frontRenderBuffer.end();
-	
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_GREATER);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
 
-	//final pass
-	glCullFace(GL_FRONT);
-	renderBuffer.begin();
-	ofClear(0);
-	ofBackground(0);
-	renderShader.begin();
-	renderShader.setUniform1i("mode", mode);
-	renderShader.setUniformTexture("backFaceDepthTex", backRenderBuffer.getTexture(0), 0);
-	renderShader.setUniformTexture("frontFaceDepthTex", frontRenderBuffer.getTexture(0), 1);
-	renderShader.setUniform3f("maxCol", thicknessCol);
-	renderShader.setUniform2f("screenScale", ofVec2f(ofGetWidth(), ofGetHeight()));
-	renderShader.setUniform2f("camPrames", ofVec2f(nearClip, farClip));
-	renderShader.setUniform1f("thicknessCoef", thicknessCoef);
-	
-	quad.draw();
-	renderShader.end();
-	renderBuffer.end();
-	
-	
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-	renderBuffer.draw(0.0, 0.0);
-	
-	
+		cam.begin();
+		//box.draw();
+		thichnessShader.begin();
+		thichnessShader.setUniform1f("geomMode", 0.0);
+		thichnessShader.setUniform2f("camPrames", ofVec2f(nearClip, farClip));
 
+		createBox();
+		ofPushMatrix();
+		ofTranslate(0.0, -150.0, 0.0);
+		modelMesh.draw();
+		ofPopMatrix();
+		cam.end();
+		thichnessShader.end();
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+		backRenderBuffer.end();
+
+
+
+		//2nd pass
+		//drawFrontFace(表面のレンダリングかつDepthTestは通常)
+
+		frontRenderBuffer.begin();
+		ofClear(0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearDepth(0.0);
+		frontRenderBuffer.clearDepthBuffer(0.0);
+
+		backRenderBuffer.clearDepthBuffer(1.0);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
+
+
+
+
+		cam.begin();
+		//box.draw();
+		thichnessShader.begin();
+		thichnessShader.setUniform1f("geomMode", 0.0);
+		thichnessShader.setUniform2f("camPrames", ofVec2f(nearClip, farClip));
+		createBox();
+		ofPushMatrix();
+		ofTranslate(0.0, -150.0, 0.0);
+		modelMesh.draw();
+		ofPopMatrix();
+		cam.end();
+		thichnessShader.end();
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+		frontRenderBuffer.end();
+
+
+		//final pass
+		renderBuffer.begin();
+		ofClear(0);
+		ofBackground(0);
+		renderShader.begin();
+		renderShader.setUniform1i("mode", mode);
+		renderShader.setUniformTexture("backFaceDepthTex", backRenderBuffer.getTexture(0), 0);
+		renderShader.setUniformTexture("frontFaceDepthTex", frontRenderBuffer.getTexture(0), 1);
+		renderShader.setUniform3f("maxCol", thicknessCol);
+		renderShader.setUniform2f("screenScale", ofVec2f(ofGetWidth(), ofGetHeight()));
+		renderShader.setUniform2f("camPrames", ofVec2f(nearClip, farClip));
+		renderShader.setUniform1f("thicknessCoef", thicknessCoef);
+
+		quad.draw();
+		renderShader.end();
+		renderBuffer.end();
+
+
+
+		//ofDisableDepthTest();
+		renderBuffer.draw(0.0, 0.0);
+
+	}
 	
 	/*
-	ofEnableDepthTest();
-	cam.begin();
-	ofPushMatrix();
-	//ofRotateX(180);
-	//ofTranslate(0.0, 200.0, 0.0);
-	modelMesh.draw(OF_MESH_FILL);
-	ofPopMatrix();
-	cam.end();
+	else {
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_CULL_FACE);
+		if (cull) {
+			//front
+			glDepthFunc(GL_LESS);
+			glCullFace(GL_BACK);
+		}
+		else {
+			glClearDepth(.0);
+			glDepthFunc(GL_GREATER);
+			glCullFace(GL_FRONT);
+		}
+		cam.begin();
+		createBox();
+		ofPushMatrix();
+		ofSetColor(255.0);
+		modelMesh.draw(OF_MESH_FILL);
+		ofPopMatrix();
+		cam.end();
+
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+	}
 	*/
 	
-
-
 	
+
 	ofDrawBitmapString("Fps : " + to_string(ofGetFrameRate()), ofGetWidth() - 200, 30.0);
 	if (mode == 0) {
 		ofDrawBitmapString("BackFace-Depth", ofGetWidth() - 200, 60.0);
@@ -150,7 +185,7 @@ void ofApp::draw(){
 	}else if (mode == 2) {
 		ofDrawBitmapString("Thickness", ofGetWidth() - 200, 60.0);
 	}
-	
+	ofDrawBitmapString("DebugMode : " + to_string(debugMode), ofGetWidth() - 200, 90.0);
 	gui.draw();
 }
 

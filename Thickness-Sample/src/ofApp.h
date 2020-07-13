@@ -28,6 +28,8 @@ class ofApp : public ofBaseApp{
 		bool cullMode = true;
 		ofxPanel gui;
 		ofxToggle cull;
+		ofxToggle debugMode;
+
 		ofxFloatSlider radius;
 		ofxFloatSlider nearClip;
 		ofxFloatSlider farClip;
