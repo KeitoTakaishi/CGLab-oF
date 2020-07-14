@@ -38,6 +38,7 @@
       <Filter>addons\ofxGui\src</Filter>
     </ClCompile>
     <ClCompile Include="ofxMRTViewer.cpp" />
+    <ClCompile Include="FluidSolver.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -91,6 +92,7 @@
       <Filter>addons\ofxGui\src</Filter>
     </ClInclude>
     <ClInclude Include="ofxMRTViewer.h" />
+    <ClInclude Include="FluidSolver.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />

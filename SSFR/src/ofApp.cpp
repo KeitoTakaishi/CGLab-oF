@@ -9,78 +9,27 @@
 */
 //--------------------------------------------------------------
 void ofApp::setup(){
-	boundingBox.set(range.x + 100.0);
-	//boundingBox.set(range.x, range.y, range.z);
-	//point spriteÇê∂ê¨Ç∑ÇÈÇΩÇﬂÇ…GeometryShaderÇ™ïKóv
-	depthPass.setGeometryInputType(GL_POINTS);
-	depthPass.setGeometryOutputType(GL_TRIANGLE_STRIP);
-	depthPass.setGeometryOutputCount(4);
+	ofSetVerticalSync(false);
+	preLoad();
+	initFbo();
+	initGUI();
 
-	
-	depthPass.load("shaders/depth.vert", "shaders/depth.frag", "shaders/depth.geom");
-	blurPass.load("shaders/blur.vert", "shaders/blur.frag");
-	calcNormalPass.load("shaders/calcNormal.vert", "shaders/calcNormal.frag");
-	renderPass.load("shaders/render.vert", "shaders/render.frag");
-
-
-	range = ofVec3f(50.0, 25.0, 50.0);
-	vbo.setMode(OF_PRIMITIVE_POINTS);
-	particleNum = 30000;
-	for (int i = 0; i < particleNum; i++) {
-		ofVec3f pos = ofVec3f(ofRandom(-range.x, range.x), ofRandom(-range.y, range.y), ofRandom(-range.z, range.z));
-		vertices.push_back(pos);
-		vel.push_back(  ofVec3f(0.0f, ofRandom(2.0f), 0.0));
-		vbo.addVertex(pos);
-	}
-	
-	//Todo:Programable far,near
-	cam.setupPerspective(true, 60.0f, nearClip, farClip);
-
-	ofFbo::Settings fboSetting;
-	fboSetting.width = ofGetWidth();
-	fboSetting.height = ofGetHeight();
-	fboSetting.numColorbuffers = 1;
-	fboSetting.useDepth = true;
-	fboSetting.useStencil = true;
-	fboSetting.depthStencilAsTexture = true;
-	fboSetting.depthStencilInternalFormat;
-	fboSetting.internalformat = GL_RGBA32F;
-	fboSetting.wrapModeHorizontal = GL_CLAMP_TO_EDGE;
-	fboSetting.wrapModeVertical = GL_CLAMP_TO_EDGE;
-	fboSetting.minFilter = GL_LINEAR;
-	fboSetting.maxFilter = GL_LINEAR;
-
-	depthFbo.allocate(fboSetting);
-	blurFbo1.allocate(fboSetting);
-	blurFbo2.allocate(fboSetting);
-	calcNormalFbo.allocate(fboSetting);
-	renderFbo.allocate(fboSetting);
-
-
-	gui.setup();
-	gui.add(particleSize.setup("particleSize", 1.7, 0.0, 4.0));
-	gui.add(blurScale.setup("blurScale", 0.1, 0.0, 1.0));
-	gui.add(blurDepthFallOff.setup("blurDepthFallOff", 3.0, 0.0, 4.0));
-	gui.add(nearClip.setup("nearClip", 4.1, 0.1, 10.0));
-	gui.add(farClip.setup("farClip", 1500.0, 500.0, 5000.0));
-
-
+	fluidSolver = new FluidSolver();
+	fluidSolver->init();
 	mrtViewer = new ofxMRTViewer(3);
-
-
+	cam.setupPerspective(true, 60.0f, nearClip, farClip);
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
+	ofSetWindowTitle(to_string(ofGetFrameRate()));
 	cam.setNearClip(nearClip);
 	cam.setFarClip(farClip);
 	float t = ofGetElapsedTimef();
 	
-	for (int i = 0; i < particleNum; i++) {
-		vertices[i] -= vel[i];
-		if (vertices[i].y < -150.0) vertices[i].y = 150.0;
-		vbo.setVertex(i, vertices[i]);
-	}
+
+	fluidSolver->update();
+	
 	
 	t = t * PI / 180.0 * 10.0;
 	lightPos = ofVec3f(250.0 * sin(t), 50.0, 250.0*cos(t));
@@ -102,7 +51,7 @@ void ofApp::update(){
 	depthPass.setUniformMatrix4f("invViewMatrix", view.getInverse());
 	depthPass.setUniformMatrix4f("projectionMatrix", proj);
 	depthPass.setUniformMatrix4f("invpProjectionMatrix", proj.getInverse());
-	vbo.draw(OF_MESH_FILL);
+	fluidSolver->draw();
 	depthPass.end();
 
 	//pointLight.setPosition(lightPos);
@@ -148,7 +97,6 @@ void ofApp::update(){
 	blurFbo2.draw(0.0, 0.0);
 	calcNormalPass.end();
 	calcNormalFbo.end();
-
 
 	quad.addVertex(ofVec3f(-1.0, -1.0));
 	quad.addVertex(ofVec3f(-1.0, 1.0));
@@ -202,4 +150,45 @@ void ofApp::keyPressed(int key){
 		calcNormalPass.load("shaders/calcNormal.vert", "shaders/calcNormal.frag");
 		renderPass.load("shaders/render.vert", "shaders/render.frag");
 	}
+}
+//--------------------------------------------------------------
+void ofApp::preLoad() {
+	depthPass.setGeometryInputType(GL_POINTS);
+	depthPass.setGeometryOutputType(GL_TRIANGLE_STRIP);
+	depthPass.setGeometryOutputCount(4);
+	depthPass.load("shaders/depth.vert", "shaders/depth.frag", "shaders/depth.geom");
+	blurPass.load("shaders/blur.vert", "shaders/blur.frag");
+	calcNormalPass.load("shaders/calcNormal.vert", "shaders/calcNormal.frag");
+	renderPass.load("shaders/render.vert", "shaders/render.frag");
+}
+//--------------------------------------------------------------
+void ofApp::initGUI() {
+	gui.setup();
+	gui.add(particleSize.setup("particleSize", 1.7, 0.0, 4.0));
+	gui.add(blurScale.setup("blurScale", 0.1, 0.0, 1.0));
+	gui.add(blurDepthFallOff.setup("blurDepthFallOff", 3.0, 0.0, 4.0));
+	gui.add(nearClip.setup("nearClip", 4.1, 0.1, 10.0));
+	gui.add(farClip.setup("farClip", 1500.0, 500.0, 5000.0));
+}
+//--------------------------------------------------------------
+void ofApp::initFbo() {
+	ofFbo::Settings fboSetting;
+	fboSetting.width = ofGetWidth();
+	fboSetting.height = ofGetHeight();
+	fboSetting.numColorbuffers = 1;
+	fboSetting.useDepth = true;
+	fboSetting.useStencil = true;
+	fboSetting.depthStencilAsTexture = true;
+	fboSetting.depthStencilInternalFormat;
+	fboSetting.internalformat = GL_RGBA32F;
+	fboSetting.wrapModeHorizontal = GL_CLAMP_TO_EDGE;
+	fboSetting.wrapModeVertical = GL_CLAMP_TO_EDGE;
+	fboSetting.minFilter = GL_LINEAR;
+	fboSetting.maxFilter = GL_LINEAR;
+
+	depthFbo.allocate(fboSetting);
+	blurFbo1.allocate(fboSetting);
+	blurFbo2.allocate(fboSetting);
+	calcNormalFbo.allocate(fboSetting);
+	renderFbo.allocate(fboSetting);
 }

@@ -3,14 +3,17 @@
 #include "ofMain.h"
 #include "ofxGui.h"
 #include "../ofxMRTViewer.h"
+#include "../FluidSolver.h"
 class ofApp : public ofBaseApp{
 
 	public:
 		void setup();
 		void update();
 		void draw();
-
 		void keyPressed(int key);
+		void preLoad();
+		void initGUI();
+		void initFbo();
 		
 		ofShader particle;
 		ofShader depthPass;
@@ -18,12 +21,10 @@ class ofApp : public ofBaseApp{
 		ofShader calcNormalPass;
 		ofShader renderPass;
 		
-		ofVec3f range;
-		vector<ofVec3f> vertices;
-		vector<ofVec3f> vel;
-		ofVboMesh vbo;
+		//particle parameters
+		FluidSolver* fluidSolver;
+
 		ofEasyCam cam;
-		int particleNum;
 		ofFbo depthFbo;
 		ofFbo blurFbo1, blurFbo2;
 		ofFbo calcNormalFbo;
@@ -39,7 +40,6 @@ class ofApp : public ofBaseApp{
 
 		ofxMRTViewer* mrtViewer;
 
-		ofBoxPrimitive boundingBox;
 
 		//Light
 		ofSpherePrimitive pointLight;
