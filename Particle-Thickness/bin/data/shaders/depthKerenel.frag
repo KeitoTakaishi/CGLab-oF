@@ -9,7 +9,7 @@ out vec4 fragColor;
 uniform float NormalMode;
 uniform float size;
 uniform mat4 projectionMatrix;
-
+uniform vec2 camClips;
 
 float LinearizeDepth(float depth)  
 {  
@@ -49,7 +49,7 @@ void main() {
 	vec4 screenSpacePos =  projectionMatrix * viewPos;
     float depth = screenSpacePos.z / screenSpacePos.w;
     vec3 nP = screenSpacePos.xyz / screenSpacePos.w;
-    //depth = LinearizeDepth(depth);
+    depth = LinearizeDepth(depth);
 
     fragColor = vec4(vec3(depth), 1.0);
     //fragColor = vec4(nP * 0.5 + vec3(0.5), 1.0);

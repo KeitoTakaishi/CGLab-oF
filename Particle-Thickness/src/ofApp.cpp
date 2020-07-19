@@ -6,7 +6,6 @@ void ofApp::setup(){
 	initFbo();
 	initParticle();
 
-
 }
 
 //--------------------------------------------------------------
@@ -15,12 +14,11 @@ void ofApp::update(){
 	cam.setNearClip(nearClip);
 	cam.setFarClip(farClip);
 
-
-
 	ofMatrix4x4 view = ofGetCurrentViewMatrix();
 	ofMatrix4x4 invView = view.getInverse();
 	ofMatrix4x4 proj = cam.getProjectionMatrix();
 
+	/*
 	//first-pass
 	backDepth.begin();
 	ofEnableDepthTest();
@@ -43,6 +41,7 @@ void ofApp::update(){
 	backDepth.end();
 
 	//seconds pass
+	
 	frontDepth.begin();
 	ofEnableDepthTest();
 	glClearDepth(1.0);
@@ -79,25 +78,45 @@ void ofApp::update(){
 	//cam.end();
 	thicknessKernel.end();
 	thickness.end();
+	*/
+
+
+	backDepth.begin();
+	//ofEnableDepthTest();
+	ofClear(0);
+	ofEnableBlendMode(OF_BLENDMODE_ADD);
+	//glClearDepth(.0);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glDepthFunc(GL_GREATER);
+	cam.begin();
+	depthKernel.begin();
+	//depthKernel.setUniform1f("NormalMode", (float)normalMode);
+	depthKernel.setUniform1f("NormalMode", 0.0);
+	depthKernel.setUniform1f("size", particleSize);
+	depthKernel.setUniform1f("time", ofGetElapsedTimef());
+	depthKernel.setUniformMatrix4f("viewMatrix", view);
+	depthKernel.setUniformMatrix4f("invViewMatrix", view.getInverse());
+	depthKernel.setUniformMatrix4f("projectionMatrix", proj);
+	depthKernel.setUniformMatrix4f("invpProjectionMatrix", proj.getInverse());
+	depthKernel.setUniform2f("camClips", ofVec2f(nearClip, farClip));
+	particle.draw();
+	depthKernel.end();
+	cam.end();
+	backDepth.end();
+
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-	ofSetBackgroundColor(0);
-
 	/*
-	if (debugMode == 0) {
-		frontDepth.draw(0.0, 0.0);
-	}
-	else if(debugMode == 1){
-		backDepth.draw(0.0, 0.0);
-	}
-	else {
-		thickness.draw(0.0, 0.0);
-	}
-	*/
+	ofSetBackgroundColor(0);
 	thickness.draw(0.0, 0.0);
-	
+	ofDisableDepthTest();
+	gui.draw();
+	*/
+
+	ofSetBackgroundColor(0);
+	backDepth.draw(0.0, 0.0);
 	ofDisableDepthTest();
 	gui.draw();
 }
