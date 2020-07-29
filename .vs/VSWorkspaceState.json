@@ -4,8 +4,9 @@
     "\\StamFluid",
     "\\StamFluid\\bin",
     "\\StamFluid\\bin\\data",
-    "\\StamFluid\\bin\\data\\shaders"
+    "\\StamFluid\\bin\\data\\shaders",
+    "\\StamFluid\\src"
   ],
-  "SelectedNode": "\\StamFluid\\bin\\data\\shaders\\preview.vert",
+  "SelectedNode": "\\StamFluid\\bin\\data\\shaders\\result.frag",
   "PreviewInSolutionExplorer": false
 }

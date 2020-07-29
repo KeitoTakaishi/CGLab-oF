@@ -2,10 +2,12 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+	//ofDisableArbTex();
 	//create bufferes
-	swapBuffer = new SwapBuffer(512, 512, GL_RGB32F);
-	
+	ofSetFrameRate(60);
 
+	//swapBuffer = new SwapBuffer(512, 512, GL_RGB32F);
+	swapBuffer = new SwapBuffer(texRes, texRes, GL_RGB32F);
 	debuggui = new ofxDebugGui();
 
 	advectionShader.load("shaders/pass.vert", "shaders/updateAdvection.frag");
@@ -18,16 +20,45 @@ void ofApp::setup(){
 	tex.load("lena.jpg");
 	cout << tex.getTexture().getTextureData().textureID << endl;
 
-	mesh.setMode(OF_PRIMITIVE_POINTS);
+	//mesh.setMode(OF_PRIMITIVE_POINTS);
+	mesh.setMode(OF_PRIMITIVE_TRIANGLE_FAN);
+	
+	/*
 	for (int x = 0; x < texRes; x++) {
 		for (int y = 0; y < texRes; y++) {
 			int i = y * texRes + x;
 			//mesh.addVertex(ofVec3f(x / texRes * meshSize.x, y / texRes * meshSize.y, 0.0));
 			mesh.addVertex(ofVec3f(x, y, 0.0));
-			
 			mesh.addTexCoord(ofVec2f(x, y));
 		}
 	}
+	*/
+
+	float w = 1.0;
+	float h = 1.0;
+	//float iw = 512.0;
+	//float ih = 512.0
+
+	float iw = texRes;
+	float ih = texRes;
+
+	mesh.setMode(OF_PRIMITIVE_TRIANGLE_FAN);
+
+	mesh.addVertex(ofVec3f(w, h, 0.0));
+	mesh.addTexCoord(ofVec2f(iw, ih));
+
+	mesh.addVertex(ofVec3f(w, -h, 0.0));
+	mesh.addTexCoord(ofVec2f(iw, 0.0f));
+
+	mesh.addVertex(ofVec3f(-w, -h, 0.0));
+	mesh.addTexCoord(ofVec2f(0.0f, 0.0f));
+
+	mesh.addVertex(ofVec3f(-w, h, 0.0));
+	mesh.addTexCoord(ofVec2f(0.0f, ih));
+	
+	//ofPlanePrimitive plane;
+	//plane.set(ofGetWidth(), ofGetHeight(), 2, 2, OF_PRIMITIVE_POINTS);
+	//mesh = plane.getMesh();
 
 	curCursor = ofVec2f(0.0, 0.0);
 	preCursor = ofVec2f(0.0, 0.0);
@@ -36,17 +67,28 @@ void ofApp::setup(){
 	gui.setPosition(20, 20);
 	gui.add(area.set("area", 10, 0, 50));
 	gui.add(viscosity.set("viscosity", 0.99, 0.9, 1.0));
+	gui.add(mouseIntensity.set("mouseIntensity", 1.0, 0.0, 10.0));
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
+	
+	//viscosity = 0.95 +0.05*sin(ofGetElapsedTimef());
+
+	
 	updateAdv();
 	interactionForce();
+	
 	updateDivergence();
-	for (int i = 0; i < 30; i++) {
-		updatePressure();
+	
+	for (int i = 0; i < 10; i++) {
+		//updatePressure();
 	}
-	updateVel();
+	
+	//updateVel();
+	//cout << mouseVel << endl;
+
+	
 }
 
 //--------------------------------------------------------------
@@ -61,6 +103,7 @@ void ofApp::draw(){
 	ofMatrix4x4 viewMatrix;
 	ofMatrix4x4 projectionMatrix;
 	
+	/*
 	//vel
 	{
 		debuggui->getShader().begin();
@@ -81,7 +124,7 @@ void ofApp::draw(){
 
 		debuggui->getShader().end();
 	}
-	
+	*/
 	
 	//dev
 	/*
@@ -111,38 +154,38 @@ void ofApp::draw(){
 		resultShader.begin();
 
 		//debuggui->getShader().setUniformTexture("tex0", swapBuffer->src->getTexture(2), 2);//fbo texture
-		resultShader.setUniformTexture("tex0", tex.getTexture(), tex.getTexture().getTextureData().textureID);//fbo texture
-		resultShader.setUniformTexture("tex1", swapBuffer->src->getTexture(0), 0);//fbo texture
-		ofMatrix4x4 modelMatrix;
-		modelMatrix.translate((float)ofGetWidth() / 2.0 - (float)meshSize.x / 2.0 + texRes/2.0, (float)ofGetHeight() / 2.0 - (float)meshSize.y / 2.0, 0.0);
+		resultShader.setUniformTexture("tex0", tex.getTexture(), 0);//fbo texture
+		resultShader.setUniformTexture("velTex", swapBuffer->src->getTexture(0),1);//fbo texture
+		resultShader.setUniformTexture("divTex", swapBuffer->src->getTexture(1), 2);//fbo texture
+		resultShader.setUniform1f("dt", 1.0 / ofGetFrameRate());
+		//ofMatrix4x4 modelMatrix;
+		//modelMatrix.translate((float)ofGetWidth() / 2.0 - (float)meshSize.x / 2.0 + texRes / 2.0, (float)ofGetHeight() / 2.0 - (float)meshSize.y / 2.0, 0.0);
+		//modelMatrix.translate((float)ofGetWidth() / 2.0 - (float)meshSize.x / 2.0, (float)ofGetHeight() / 2.0 - (float)meshSize.y / 2.0, 0.0);
 
-		viewMatrix = ofGetCurrentViewMatrix();
-		cam.begin();
-		projectionMatrix = cam.getProjectionMatrix();
-		cam.end();
-		resultShader.setUniformMatrix4f("model", modelMatrix);
-		resultShader.setUniformMatrix4f("view", viewMatrix);
-		resultShader.setUniformMatrix4f("proj", projectionMatrix);
+		//viewMatrix = ofGetCurrentViewMatrix();
+		//cam.begin();
+		//projectionMatrix = cam.getProjectionMatrix();
+		//cam.end();
+		//resultShader.setUniformMatrix4f("model", modelMatrix);
+		//resultShader.setUniformMatrix4f("view", viewMatrix);
+		//resultShader.setUniformMatrix4f("proj", projectionMatrix);
 		mesh.draw();
 
 		//debuggui->getShader().end();
 		resultShader.end();
 	}
 
-
-
 	ofDisableDepthTest();
 	gui.draw();
-	
-
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 	if (key == ' ') {
 		//pass.load("shaders/pass.vert", "shaders/test.frag");
-		advectionShader.load("shaders/pass.vert", "shaders/updateAdvection.frag");
-		debuggui->load();
+		//advectionShader.load("shaders/pass.vert", "shaders/updateAdvection.frag");
+		//debuggui->load();
+		resultShader.load("shaders/result");
 	}
 }
 
@@ -161,7 +204,6 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 	//cursor = ofVec2f((float)x/ofGetWidth(), (float)y/ofGetHeight());
 	
-	
 	curCursor = ofVec2f((float)(x), (float)(y));
 	if (curCursor.x < 0.0) {
 		curCursor.x = 0.0;
@@ -175,14 +217,22 @@ void ofApp::mouseDragged(int x, int y, int button){
 	if (curCursor.y > ofGetHeight()) {
 		curCursor.y = ofGetHeight();
 	}
-	mouseVel = curCursor - preCursor;
+
+	curCursor = ofVec2f((float)ofMap(x, 0.0, ofGetWidth(), 0.0, texRes)
+		, (float)(ofMap(y, 0.0, ofGetHeight(), 0.0, texRes)));
+
+	//cout << 1.0 / ofGetFrameRate() << endl;
+	mouseVel = (curCursor - preCursor)/(1.0 / ofGetFrameRate());
 	preCursor = curCursor;
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
 	isClicked = 1;
-	curCursor = ofVec2f((float)(x), (float)(y) );
+	
+	curCursor = ofVec2f((float)ofMap(x, 0.0, ofGetWidth(), 0.0, 512.0)
+		, (float) (ofMap(y, 0.0, ofGetHeight(), 0.0, 512)));
+	preCursor = curCursor;
 
 }
 
@@ -212,9 +262,8 @@ void ofApp::updateAdv() {
 	advectionShader.setUniformTexture("div", swapBuffer->src->getTexture(1), 1);
 	advectionShader.setUniformTexture("press", swapBuffer->src->getTexture(2), 2);
 	
-	advectionShader.setUniform1f("dt", dt);
-	advectionShader.setUniform2f("cursor", mouseVel);
-	advectionShader.setUniform2f("texres", ofVec2f(256.0, 256.0));
+	advectionShader.setUniform1f("dt", (float)(1.0/ofGetFrameRate()));
+	
 
 	ofClear(0);
 	swapBuffer->src->draw(0.0, 0.0);
@@ -228,6 +277,8 @@ void ofApp::updateAdv() {
 }
 //--------------------------------------------------------------
 void ofApp::interactionForce() {
+
+	
 	swapBuffer->dst->begin();//fbo
 	interactionForceShader.begin();//shader
 	
@@ -241,14 +292,13 @@ void ofApp::interactionForce() {
 	cursor.y = texRes - cursor.y;
 	interactionForceShader.setUniform2f("cursor", cursor);
 	interactionForceShader.setUniform2f("cursorVel", mouseVel);
-	interactionForceShader.setUniform1f("state", isClicked);
+	//interactionForceShader.setUniform1f("state", isClicked);
 	interactionForceShader.setUniform1f("area", area);
-
+	interactionForceShader.setUniform1f("intensity", mouseIntensity);	
+	interactionForceShader.setUniform1f("dt", (float)(1.0 / ofGetFrameRate()));
 
 	
 	swapBuffer->src->draw(0.0, 0.0);
-	
-
 	interactionForceShader.end();//shader
 	swapBuffer->dst->end();//fbo
 
@@ -309,8 +359,9 @@ void ofApp::updateVel() {
 	velShader.setUniformTexture("vel", swapBuffer->src->getTexture(0), 0);
 	velShader.setUniformTexture("div", swapBuffer->src->getTexture(1), 1);
 	velShader.setUniformTexture("press", swapBuffer->src->getTexture(2), 2);
-	velShader.setUniform1f("viscosity", viscosity);
+	
 
+	velShader.setUniform1f("viscosity", viscosity);
 
 
 	ofClear(0);
@@ -323,3 +374,4 @@ void ofApp::updateVel() {
 
 	swapBuffer->swap();
 }
+//--------------------------------------------------------------

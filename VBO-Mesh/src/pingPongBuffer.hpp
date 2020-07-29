@@ -7,7 +7,7 @@
 
 #ifndef pingPongBuffer_hpp
 #define pingPongBuffer_hpp
-
+#include "ofMain.h"
 struct pingPongBuffer{
 public:
     void allocate(int _width, int _height, int _internalformat = GL_RGBA, int _numColorBuffers = 1){

@@ -7,7 +7,8 @@
 
 #include "Sph.hpp"
 Sph::Sph(int _particleNum){
-    particleNum = _particleNum;
+	//particleNum = _particleNum;
+	particleNum = 256;
     //cout << this->particleNum << endl;
     
     //pos, vel, force, densityの4つのbufferが必要

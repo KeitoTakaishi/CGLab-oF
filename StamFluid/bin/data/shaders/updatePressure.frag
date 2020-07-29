@@ -21,11 +21,12 @@ void main(){
     float y0 = texture(press, uv - vec2(0.0, 1.0)).r;
     float y1 = texture(press, uv + vec2(0.0, 1.0)).r;
 
+    //vec2 delta = vec2(1.0 / 512.0, 1.0 / 512.0);
+    //float d = texture(div, uv + delta * 0.5).r;
     float d = texture(div, uv).r;
     float relaxed = (x0 + x1 + y0 + y1 - d) * 0.25;
     
-    vFragColor0 = texture(vel, uv);
-    vFragColor1 = texture(div, uv);
+    vFragColor0 = vec4(texture(vel, uv).rgb, 1.0);
+    vFragColor1 = vec4(texture(div, uv).rgb, 1.0);
     vFragColor2 = vec4(relaxed, relaxed, 0.0, 1.0);
-
 }

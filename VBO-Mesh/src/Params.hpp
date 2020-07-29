@@ -9,7 +9,7 @@
 #define Params_hpp
 
 #include <iostream>
-
+#include "ofMain.h"
 namespace Params{
     struct int2{
     public:

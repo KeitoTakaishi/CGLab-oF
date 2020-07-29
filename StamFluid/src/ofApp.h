@@ -25,6 +25,7 @@ class ofApp : public ofBaseApp{
 		void updateDivergence();
 		void updatePressure();
 		void updateVel();
+		
 
 		ofxDebugGui* debuggui;
 
@@ -44,7 +45,7 @@ class ofApp : public ofBaseApp{
 		ofVboMesh mesh;
 		int texRes = 512;
 		float dt = 0.016;
-		ofVec2f meshSize = ofVec2f(512, 512);
+		//ofVec2f meshSize = ofVec2f(512, 512);
 		ofEasyCam cam;
 		bool isClicked = 0;
 		
@@ -55,4 +56,8 @@ class ofApp : public ofBaseApp{
 		ofxPanel gui;
 		ofParameter<float> viscosity;
 		ofParameter<float> area;
+		ofParameter<float> mouseIntensity;
+
+		
+	
 };

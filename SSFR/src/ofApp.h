@@ -19,8 +19,10 @@ class ofApp : public ofBaseApp{
 		ofShader depthPass;
 		ofShader blurPass;
 		ofShader calcNormalPass;
+		ofShader thicknessPass;
 		ofShader renderPass;
 		
+
 		//particle parameters
 		FluidSolver* fluidSolver;
 
@@ -28,6 +30,7 @@ class ofApp : public ofBaseApp{
 		ofFbo depthFbo;
 		ofFbo blurFbo1, blurFbo2;
 		ofFbo calcNormalFbo;
+		ofFbo thicknessFbo;
 		ofFbo renderFbo;
 		
 		ofMesh quad;
@@ -36,6 +39,7 @@ class ofApp : public ofBaseApp{
 		ofxFloatSlider blurDepthFallOff;
 		ofxFloatSlider nearClip;
 		ofxFloatSlider farClip;
+		ofxFloatSlider alphaCoef;
 		ofxPanel gui;
 
 		ofxMRTViewer* mrtViewer;

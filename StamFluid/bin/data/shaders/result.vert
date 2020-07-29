@@ -20,6 +20,6 @@ void main() {
 
     vec4 p = position;
     //p = modelViewProjectionMatrix * p;
-    p = proj * view * model * p;
+    //p = proj * view * model * p;
     gl_Position = p;
 }
