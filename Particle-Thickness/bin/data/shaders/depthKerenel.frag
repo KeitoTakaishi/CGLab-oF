@@ -20,37 +20,36 @@ float LinearizeDepth(float depth)
 
 void main() {
     vec3 normal = vec3(0.0, 0.0, 0.0);
+
     vec2 uv = vTexCoord;
     uv = uv * 2.0 - vec2(1.0 ,1.0);
-    normal.xy = uv;
+    normal.xy = uv.xy;
     
+
     float radius_sq = dot(uv.xy, uv.xy);
 	
     if (radius_sq > 1.0) {
         discard;
     }
-    
-    //front
-    normal.z = sqrt(1.0 - radius_sq);
-    //normal.z = (-1.0 - radius_sq);
-    
-    //back
-    //normal.z = sqrt(-1.0 - radius_sq);
-    if(NormalMode == 1.0){
-        normal.z = 1.0*(normal.z * 2.0 - 1.0);
-    }else{
-        normal.z = -1.0*(normal.z * 2.0 - 1.0);
-    }
-    
-    
+
+    normal.z = (1.0 - radius_sq);
+   
 
 
-    vec4 viewPos = vec4(vpos.xyz + normalize(normal) * size,  1.0);
-	vec4 screenSpacePos =  projectionMatrix * viewPos;
-    float depth = screenSpacePos.z / screenSpacePos.w;
-    vec3 nP = screenSpacePos.xyz / screenSpacePos.w;
+    vec4 viewFrontPos = vec4(vpos.xyz + normalize(normal) * size,  1.0);
+	vec4 screenSpaceFrontPos =  projectionMatrix * viewFrontPos;
+    float depth = screenSpaceFrontPos.z / screenSpaceFrontPos.w;//表までのdepth
     depth = LinearizeDepth(depth);
 
-    fragColor = vec4(vec3(depth), 1.0);
-    //fragColor = vec4(nP * 0.5 + vec3(0.5), 1.0);
+    vec4 viewBackPos = vec4(vpos.xyz - normalize(normal) * size,  1.0);
+	vec4 screenSpaceBackPos =  projectionMatrix * viewBackPos;
+    depth = LinearizeDepth(screenSpaceBackPos.z / screenSpaceBackPos.w) - depth;//表までのdepth
+    
+    fragColor = vec4(vec3(depth ), 1.0);
 }
+
+
+/*
+結局，Thicknessの計算はただ半径に対する二倍みたいなことでは出来ない．
+行列計算を適応させる為,奥 - 手前のDepthをする必要がある
+*/

@@ -80,14 +80,15 @@ void ofApp::update(){
 	thickness.end();
 	*/
 
-
 	backDepth.begin();
 	//ofEnableDepthTest();
-	ofClear(0);
+	ofClear(0); 
 	ofEnableBlendMode(OF_BLENDMODE_ADD);
 	//glClearDepth(.0);
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//glDepthFunc(GL_GREATER);
+
+
 	cam.begin();
 	depthKernel.begin();
 	//depthKernel.setUniform1f("NormalMode", (float)normalMode);
@@ -191,7 +192,14 @@ void ofApp::initParticle() {
 	particle.setMode(OF_PRIMITIVE_POINTS);
 	ofVec3f r = ofVec3f(150, 150, 150);
 	for (int i = 0; i < particleNum; i++) {
-		ofVec3f p = ofVec3f(ofRandom(-r.x, r.x), ofRandom(-r.y, r.y), ofRandom(-r.z, r.z));
+		ofVec3f p;
+		if (ofRandom(1.0) > 0.75) {
+			p = ofVec3f(ofRandom(0.0, r.x), ofRandom(-r.y, r.y), ofRandom(-r.z, r.z));
+		}
+		else {
+			p = ofVec3f(ofRandom(-r.x, 0.0), ofRandom(-r.y, r.y), ofRandom(-r.z, r.z));
+		}
+		
 		pos.push_back(p);
 		particle.addVertex(p);
 	}
