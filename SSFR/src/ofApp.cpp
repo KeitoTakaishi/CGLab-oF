@@ -18,6 +18,17 @@ void ofApp::setup(){
 	fluidSolver->init();
 	mrtViewer = new ofxMRTViewer(3);//depth, blur, normal, thickness
 	cam.setupPerspective(true, 60.0f, nearClip, farClip);
+
+
+	ofDisableArbTex();
+	img[0].load("tex/cube_PX.png");
+	img[1].load("tex/cube_NX.png");
+	img[2].load("tex/cube_PY.png");
+	img[3].load("tex/cube_NY.png");
+	img[4].load("tex/cube_PZ.png");
+	img[5].load("tex/cube_NZ.png");
+	cubeMap.setFromImages(256, img[0], img[1], img[2], img[3], img[4], img[5]);
+	ofEnableArbTex();
 }
 //--------------------------------------------------------------
 void ofApp::update(){
@@ -126,6 +137,7 @@ void ofApp::update(){
 	}
 	//--------------------------------------------------------
 	//render
+	//cubeMap.bind();
 	renderFbo.begin();
 	ofEnableDepthTest();
 	ofClear(0);
@@ -142,6 +154,7 @@ void ofApp::update(){
 	cam.end();
 	renderPass.end();
 	renderFbo.end();
+	//cubeMap.unbind();
 }
 
 //--------------------------------------------------------------

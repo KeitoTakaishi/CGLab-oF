@@ -180,6 +180,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CubeMap.cpp" />
     <ClCompile Include="FluidSolver.cpp" />
     <ClCompile Include="ofxMRTViewer.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -196,6 +197,7 @@
     <ClCompile Include="..\..\..\addons\ofxGui\src\ofxToggle.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CubeMap.h" />
     <ClInclude Include="FluidSolver.h" />
     <ClInclude Include="ofxMRTViewer.h" />
     <ClInclude Include="src\ofApp.h" />

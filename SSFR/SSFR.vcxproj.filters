@@ -39,6 +39,7 @@
     </ClCompile>
     <ClCompile Include="ofxMRTViewer.cpp" />
     <ClCompile Include="FluidSolver.cpp" />
+    <ClCompile Include="CubeMap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -93,6 +94,7 @@
     </ClInclude>
     <ClInclude Include="ofxMRTViewer.h" />
     <ClInclude Include="FluidSolver.h" />
+    <ClInclude Include="CubeMap.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />

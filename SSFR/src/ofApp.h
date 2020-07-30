@@ -4,6 +4,8 @@
 #include "ofxGui.h"
 #include "../ofxMRTViewer.h"
 #include "../FluidSolver.h"
+#include "../CubeMap.h"
+
 class ofApp : public ofBaseApp{
 
 	public:
@@ -44,13 +46,14 @@ class ofApp : public ofBaseApp{
 		ofxPanel gui;
 
 		ofxMRTViewer* mrtViewer;
+		bool isPreview = true;
 
 
 		//Light
 		ofSpherePrimitive pointLight;
 		ofVec3f lightPos;
 		
-
-		//bool
-		bool isPreview = true;
+		//CubeMap
+		CubeMap cubeMap;
+		ofImage img[6];
 };
