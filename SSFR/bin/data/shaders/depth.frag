@@ -32,6 +32,7 @@ void main() {
     vec4 viewPos = vec4(vpos.xyz + normalize(normal) * size,  1.0);
 	vec4 screenSpacePos =  projectionMatrix * viewPos;
     float depth = screenSpacePos.z / screenSpacePos.w;
+    depth = (depth * 1.0) * 0.5;
 
 
 

@@ -38,10 +38,12 @@ void main() {
 	vec4 screenSpaceFrontPos =  projectionMatrix * viewFrontPos;
     float depth = screenSpaceFrontPos.z / screenSpaceFrontPos.w;//表までのdepth
     depth = LinearizeDepth(depth);
+    depth = (depth * 1.0) * 0.5;
 
     vec4 viewBackPos = vec4(vpos.xyz - normalize(normal) * size,  1.0);
 	vec4 screenSpaceBackPos =  projectionMatrix * viewBackPos;
     depth = LinearizeDepth(screenSpaceBackPos.z / screenSpaceBackPos.w) - depth;//表までのdepth
+    depth = (depth * 1.0) * 0.5;
     
     fragColor = vec4(vec3(depth ), 1.0);
 }

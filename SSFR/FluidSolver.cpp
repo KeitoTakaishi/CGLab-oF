@@ -2,7 +2,7 @@
 FluidSolver::FluidSolver()
 {
 	range = ofVec3f(50.0, 25.0, 50.0);
-	particleNum = 30000;
+	particleNum = 50000;
 	particle.setMode(OF_PRIMITIVE_POINTS);
 }
 

@@ -136,6 +136,8 @@ void ofApp::update(){
 	renderPass.setUniform3f("lightPos", lightPos);
 	renderPass.setUniform3f("camPos", cam.getPosition());
 	renderPass.setUniform1f("alphaCoef", alphaCoef);
+	
+	renderPass.setUniform3f("_albedoColor", albedoColor);
 	quad.draw();
 	cam.end();
 	renderPass.end();
@@ -152,8 +154,9 @@ void ofApp::draw(){
 	ofDisableDepthTest();
 	gui.draw();
 	//mrtViewer->preview(depthFbo, blurFbo2, calcNormalFbo);
-	mrtViewer->preview(depthFbo, thicknessFbo, calcNormalFbo);
-
+	if (isPreview) {
+		mrtViewer->preview(depthFbo, thicknessFbo, calcNormalFbo);
+	}
 	cam.begin();
 	//ofDrawAxis(5000);
 	cam.end();
@@ -163,6 +166,9 @@ void ofApp::draw(){
 void ofApp::keyPressed(int key){
 	if (key == ' ') {
 		preLoad();
+	}
+	else if ('p') {
+		isPreview != isPreview;
 	}
 }
 //--------------------------------------------------------------
@@ -185,12 +191,13 @@ void ofApp::preLoad() {
 //--------------------------------------------------------------
 void ofApp::initGUI() {
 	gui.setup();
-	gui.add(particleSize.setup("particleSize", 1.7, 0.0, 4.0));
+	gui.add(particleSize.setup("particleSize", 3.8, 0.0, 4.0));
 	gui.add(blurScale.setup("blurScale", 0.1, 0.0, 1.0));
-	gui.add(blurDepthFallOff.setup("blurDepthFallOff", 3.0, 0.0, 4.0));
+	gui.add(blurDepthFallOff.setup("blurDepthFallOff", 5.0, 0.0, 10.0));
 	gui.add(nearClip.setup("nearClip", 4.1, 0.1, 10.0));
 	gui.add(farClip.setup("farClip", 1500.0, 500.0, 5000.0));
-	gui.add(alphaCoef.setup("alphaCoef", 10.0, 1.0, 300.0));
+	gui.add(alphaCoef.setup("alphaCoef", 10.0, 0.0, 10.0));
+	gui.add(albedoColor.setup("albedoColor", ofVec3f(0.0, 0.8, 1.0), ofVec3f(0.0, 0.0, 0.0), ofVec3f(1.0, 1.0, 1.0)));
 }
 //--------------------------------------------------------------
 void ofApp::initFbo() {

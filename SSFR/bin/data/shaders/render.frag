@@ -6,6 +6,7 @@ uniform sampler2DRect normalTex;
 uniform sampler2DRect thicknessTex;
 uniform vec3 lightPos;
 uniform vec3 camPos;
+uniform vec3 _albedoColor;
 uniform float alphaCoef;
 in vec2 vTexCoord;
 out vec4 fragOut;
@@ -33,6 +34,7 @@ void main(){
 
     //fragOut = vec4(vec3(vec3(0.0, 0.95, 0.85) * _diffuse + specular), 1.0 );
     fragOut = vec4(vec3(vec3(0.0, 0.95, 0.85) * _diffuse + specular),  thickness * alphaCoef);
+    fragOut = vec4(vec3(_albedoColor * _diffuse + specular),  thickness * alphaCoef);
     //fragOut = vec4(vec3(thickness ), 1.0);
 
 }

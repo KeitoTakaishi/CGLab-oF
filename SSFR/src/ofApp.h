@@ -40,6 +40,7 @@ class ofApp : public ofBaseApp{
 		ofxFloatSlider nearClip;
 		ofxFloatSlider farClip;
 		ofxFloatSlider alphaCoef;
+		ofxVec3Slider albedoColor;
 		ofxPanel gui;
 
 		ofxMRTViewer* mrtViewer;
@@ -49,4 +50,7 @@ class ofApp : public ofBaseApp{
 		ofSpherePrimitive pointLight;
 		ofVec3f lightPos;
 		
+
+		//bool
+		bool isPreview = true;
 };
