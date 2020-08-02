@@ -17,6 +17,8 @@ void ofApp::setup(){
 	fluidSolver = new FluidSolver();
 	fluidSolver->init();
 	mrtViewer = new ofxMRTViewer(3);//depth, blur, normal, thickness
+
+	
 	cam.setupPerspective(true, 60.0f, nearClip, farClip);
 
 
@@ -140,6 +142,8 @@ void ofApp::update(){
 	//cubeMap.bind();
 	renderFbo.begin();
 	ofEnableDepthTest();
+	ofEnableAlphaBlending();
+	ofEnableBlendMode(OF_BLENDMODE_ADD);
 	ofClear(0);
 	renderPass.begin();
 	cam.begin();
@@ -150,10 +154,16 @@ void ofApp::update(){
 	renderPass.setUniform1f("alphaCoef", alphaCoef);
 	
 	renderPass.setUniform3f("_albedoColor", albedoColor);
+	renderPass.setUniform3f("_lightDir", lightDir);
+	renderPass.setUniform3f("_lightCoef", lightCoef);
+	renderPass.setUniform3f("_absorbK", absorbK);
+	renderPass.setUniform1i("_renderMode", renderMode);
+	
 	quad.draw();
 	cam.end();
 	renderPass.end();
 	renderFbo.end();
+	ofDisableBlendMode();
 	//cubeMap.unbind();
 }
 
@@ -168,7 +178,7 @@ void ofApp::draw(){
 	gui.draw();
 	//mrtViewer->preview(depthFbo, blurFbo2, calcNormalFbo);
 	if (isPreview) {
-		mrtViewer->preview(depthFbo, thicknessFbo, calcNormalFbo);
+		//mrtViewer->preview(depthFbo, thicknessFbo, calcNormalFbo);
 	}
 	cam.begin();
 	//ofDrawAxis(5000);
@@ -204,13 +214,18 @@ void ofApp::preLoad() {
 //--------------------------------------------------------------
 void ofApp::initGUI() {
 	gui.setup();
-	gui.add(particleSize.setup("particleSize", 3.8, 0.0, 4.0));
-	gui.add(blurScale.setup("blurScale", 0.1, 0.0, 1.0));
-	gui.add(blurDepthFallOff.setup("blurDepthFallOff", 5.0, 0.0, 10.0));
-	gui.add(nearClip.setup("nearClip", 4.1, 0.1, 10.0));
-	gui.add(farClip.setup("farClip", 1500.0, 500.0, 5000.0));
-	gui.add(alphaCoef.setup("alphaCoef", 10.0, 0.0, 10.0));
+	gui.add(particleSize.setup("particleSize", 6.4, 0.0, 20.0));
+	gui.add(blurScale.setup("blurScale", 0.08, 0.0, 1.0));
+	gui.add(blurDepthFallOff.setup("blurDepthFallOff", 10.0, 0.0, 30.0));
+	gui.add(nearClip.setup("nearClip", 0.4, 0.1, 10.0));
+	gui.add(farClip.setup("farClip", 1500.0, 20.0, 5000.0));
+	gui.add(alphaCoef.setup("alphaCoef", 0.1, 0.0, 1.0));
 	gui.add(albedoColor.setup("albedoColor", ofVec3f(0.0, 0.8, 1.0), ofVec3f(0.0, 0.0, 0.0), ofVec3f(1.0, 1.0, 1.0)));
+	gui.add(lightDir.setup("lightDir", ofVec3f(0.0, 0.8, 1.0), ofVec3f(-1.0, -1.0, -1.0), ofVec3f(1.0, 1.0, 1.0)));
+	gui.add(lightCoef.setup("_lightCoef", ofVec3f(0.1, 0.1, 0.2), ofVec3f(.0, .0, .0), ofVec3f(1.0, 1.0, 1.0)));
+	//gui.add(absorbK.setup("absorbK", ofVec3f(0.15, 0.091, 0.02), ofVec3f(.0, .0, .0), ofVec3f(1.0, 1.0, 1.0)));
+	gui.add(absorbK.setup("absorbK", ofVec3f(0.34, 0.35, 0.34), ofVec3f(.0, .0, .0), ofVec3f(1.0, 1.0, 1.0)));
+	gui.add(renderMode.setup("renderMode", 0, 0, 2));
 }
 //--------------------------------------------------------------
 void ofApp::initFbo() {

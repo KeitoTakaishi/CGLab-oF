@@ -16,6 +16,7 @@ public:
 
 	ofVboMesh particle;
 	vector<ofVec3f> pos;
-	vector<ofVec3f> vel; 
+	vector<ofVec3f> vel;
+	ofVec3f* posParticles;
 };
 

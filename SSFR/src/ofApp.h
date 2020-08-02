@@ -43,6 +43,10 @@ class ofApp : public ofBaseApp{
 		ofxFloatSlider farClip;
 		ofxFloatSlider alphaCoef;
 		ofxVec3Slider albedoColor;
+		ofxVec3Slider lightDir;
+		ofxVec3Slider absorbK;
+		ofxVec3Slider lightCoef;
+		ofxIntSlider renderMode;//Thickness, Absorb, Final
 		ofxPanel gui;
 
 		ofxMRTViewer* mrtViewer;
