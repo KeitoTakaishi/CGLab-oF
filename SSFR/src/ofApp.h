@@ -54,6 +54,7 @@ class ofApp : public ofBaseApp{
 
 
 		//Light
+		ofVboMesh lightMesh;
 		ofSpherePrimitive pointLight;
 		ofVec3f lightPos;
 		

@@ -31,6 +31,9 @@ void ofApp::setup(){
 	img[5].load("tex/cube_NZ.png");
 	cubeMap.setFromImages(256, img[0], img[1], img[2], img[3], img[4], img[5]);
 	ofEnableArbTex();
+
+	//initLight
+	pointLight.set(30.0, 36);
 }
 //--------------------------------------------------------------
 void ofApp::update(){
@@ -143,10 +146,32 @@ void ofApp::update(){
 	renderFbo.begin();
 	ofEnableDepthTest();
 	ofEnableAlphaBlending();
-	ofEnableBlendMode(OF_BLENDMODE_ADD);
+	//ofEnableBlendMode(OF_BLENDMODE_ADD);
 	ofClear(0);
 	renderPass.begin();
 	cam.begin();
+
+	renderPass.setUniform1i("type", 1);
+	ofMatrix4x4 model;
+	model.setTranslation(lightPos);
+	renderPass.setUniformMatrix4f("model", model);
+	renderPass.setUniformMatrix4f("view", view);
+	renderPass.setUniformMatrix4f("proj", proj);
+	ofSpherePrimitive pointLight;
+	pointLight.setPosition(lightPos);
+	lightMesh = pointLight.getMesh();
+	lightMesh.draw();
+	
+	ofBoxPrimitive room;
+	room.set(1000.0);
+	model.setTranslation(0.0, 0.0, 0.0);
+	renderPass.setUniformMatrix4f("model", model);
+	lightMesh = room.getMesh();
+	lightMesh.drawWireframe();
+	
+
+
+	renderPass.setUniform1i("type", 0);
 	renderPass.setUniformTexture("normalTex", calcNormalFbo.getTexture(0), 0);
 	renderPass.setUniformTexture("thicknessTex", thicknessFbo.getTexture(0), 1);
 	renderPass.setUniform3f("lightPos", lightPos);
@@ -158,8 +183,9 @@ void ofApp::update(){
 	renderPass.setUniform3f("_lightCoef", lightCoef);
 	renderPass.setUniform3f("_absorbK", absorbK);
 	renderPass.setUniform1i("_renderMode", renderMode);
-	
 	quad.draw();
+	
+
 	cam.end();
 	renderPass.end();
 	renderFbo.end();
@@ -176,9 +202,11 @@ void ofApp::draw(){
 	renderFbo.draw(0.0, 0.0);
 	ofDisableDepthTest();
 	gui.draw();
+	
+	
 	//mrtViewer->preview(depthFbo, blurFbo2, calcNormalFbo);
 	if (isPreview) {
-		//mrtViewer->preview(depthFbo, thicknessFbo, calcNormalFbo);
+		mrtViewer->preview(depthFbo, thicknessFbo, calcNormalFbo);
 	}
 	cam.begin();
 	//ofDrawAxis(5000);
