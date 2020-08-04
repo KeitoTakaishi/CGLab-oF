@@ -22,6 +22,7 @@ void ofApp::setup(){
 	cam.setupPerspective(true, 60.0f, nearClip, farClip);
 
 
+	//CubeMap
 	ofDisableArbTex();
 	img[0].load("tex/cube_PX.png");
 	img[1].load("tex/cube_NX.png");
@@ -29,6 +30,17 @@ void ofApp::setup(){
 	img[3].load("tex/cube_NY.png");
 	img[4].load("tex/cube_PZ.png");
 	img[5].load("tex/cube_NZ.png");
+
+	/*
+	img[0].load("tex/posx.jpg");
+	img[1].load("tex/negx.jpg");
+	img[2].load("tex/posy.jpg");
+	img[3].load("tex/negy.jpg");
+	img[4].load("tex/posz.jpg");
+	img[5].load("tex/negz.jpg");
+	*/
+
+
 	cubeMap.setFromImages(256, img[0], img[1], img[2], img[3], img[4], img[5]);
 	ofEnableArbTex();
 
@@ -45,7 +57,7 @@ void ofApp::update(){
 	fluidSolver->update();
 	
 	t = t * PI / 180.0 * 10.0;
-	lightPos = ofVec3f(250.0 * sin(t), 50.0, 250.0*cos(t));
+	//lightPos = ofVec3f(250.0 * sin(t), 50.0, 250.0*cos(t));
 
 
 	//--------------------------------------------------------
@@ -142,75 +154,80 @@ void ofApp::update(){
 	}
 	//--------------------------------------------------------
 	//render
-	//cubeMap.bind();
+	cubeMap.bind();
 	renderFbo.begin();
 	ofEnableDepthTest();
-	ofEnableAlphaBlending();
+	//ofEnableAlphaBlending();
 	//ofEnableBlendMode(OF_BLENDMODE_ADD);
 	ofClear(0);
 	renderPass.begin();
 	cam.begin();
 
-	renderPass.setUniform1i("type", 1);
+	//Debug-Light
+	
 	ofMatrix4x4 model;
 	model.setTranslation(lightPos);
+	renderPass.setUniform1i("type", 1);
 	renderPass.setUniformMatrix4f("model", model);
 	renderPass.setUniformMatrix4f("view", view);
 	renderPass.setUniformMatrix4f("proj", proj);
 	ofSpherePrimitive pointLight;
-	pointLight.setPosition(lightPos);
+	pointLight.setPosition(ofVec3f(lightPos));
 	lightMesh = pointLight.getMesh();
 	lightMesh.draw();
 	
+	//Room
 	ofBoxPrimitive room;
-	room.set(1000.0);
+	room.set(2000.0);
 	model.setTranslation(0.0, 0.0, 0.0);
 	renderPass.setUniformMatrix4f("model", model);
+	renderPass.setUniform1i("type", 2);
 	lightMesh = room.getMesh();
-	lightMesh.drawWireframe();
+	lightMesh.draw();
 	
-
-
+	
+	//Quad-RemderTexture
 	renderPass.setUniform1i("type", 0);
-	renderPass.setUniformTexture("normalTex", calcNormalFbo.getTexture(0), 0);
-	renderPass.setUniformTexture("thicknessTex", thicknessFbo.getTexture(0), 1);
-	renderPass.setUniform3f("lightPos", lightPos);
+	renderPass.setUniformTexture("normalTex", calcNormalFbo.getTexture(0), 1);
+	renderPass.setUniformTexture("thicknessTex", thicknessFbo.getTexture(0), 2);
+
 	renderPass.setUniform3f("camPos", cam.getPosition());
 	renderPass.setUniform1f("alphaCoef", alphaCoef);
 	
-	renderPass.setUniform3f("_albedoColor", albedoColor);
-	renderPass.setUniform3f("_lightDir", lightDir);
+	//Lightingcolor
+	renderPass.setUniform3f("_albedoColor", ofVec3f(albedoColor.get().r, albedoColor.get().g, albedoColor.get().b));
+	renderPass.setUniform3f("_specularColor", ofVec3f(specularColor.get().r, specularColor.get().g, specularColor.get().b));
+	renderPass.setUniform3f("_ambientColor", ofVec3f(ambientColor.get().r, ambientColor.get().g, ambientColor.get().b));
+
+
+	renderPass.setUniform3f("_lightDir", ofVec3f(lightPos).normalize());
 	renderPass.setUniform3f("_lightCoef", lightCoef);
 	renderPass.setUniform3f("_absorbK", absorbK);
 	renderPass.setUniform1i("_renderMode", renderMode);
 	quad.draw();
 	
-
 	cam.end();
+	
+
 	renderPass.end();
 	renderFbo.end();
 	ofDisableBlendMode();
-	//cubeMap.unbind();
+	cubeMap.unbind();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-	ofBackground(0.0, 0.0, 0.0);
+	//ofBackground(0.0, 0.0, 0.0);
 
-	ofEnableAlphaBlending();
-	//thicknessFbo.draw(0.0, 0.0);
+	//ofEnableAlphaBlending();
 	renderFbo.draw(0.0, 0.0);
 	ofDisableDepthTest();
 	gui.draw();
 	
 	
-	//mrtViewer->preview(depthFbo, blurFbo2, calcNormalFbo);
 	if (isPreview) {
 		mrtViewer->preview(depthFbo, thicknessFbo, calcNormalFbo);
 	}
-	cam.begin();
-	//ofDrawAxis(5000);
-	cam.end();
 }
 
 //--------------------------------------------------------------
@@ -219,7 +236,8 @@ void ofApp::keyPressed(int key){
 		preLoad();
 	}
 	else if ('p') {
-		isPreview != isPreview;
+		isPreview = !isPreview;
+		cout << isPreview << endl;
 	}
 }
 //--------------------------------------------------------------
@@ -246,14 +264,18 @@ void ofApp::initGUI() {
 	gui.add(blurScale.setup("blurScale", 0.08, 0.0, 1.0));
 	gui.add(blurDepthFallOff.setup("blurDepthFallOff", 10.0, 0.0, 30.0));
 	gui.add(nearClip.setup("nearClip", 0.4, 0.1, 10.0));
-	gui.add(farClip.setup("farClip", 1500.0, 20.0, 5000.0));
+	gui.add(farClip.setup("farClip", 3000.0, 20.0, 5000.0));
 	gui.add(alphaCoef.setup("alphaCoef", 0.1, 0.0, 1.0));
-	gui.add(albedoColor.setup("albedoColor", ofVec3f(0.0, 0.8, 1.0), ofVec3f(0.0, 0.0, 0.0), ofVec3f(1.0, 1.0, 1.0)));
-	gui.add(lightDir.setup("lightDir", ofVec3f(0.0, 0.8, 1.0), ofVec3f(-1.0, -1.0, -1.0), ofVec3f(1.0, 1.0, 1.0)));
+	gui.add(lightPos.set("lightDir", ofVec3f(200.0, 0.8, 0.0), ofVec3f(-200.0, -200.0, -200.0), ofVec3f(200.0, 200.0, 200.0)));
 	gui.add(lightCoef.setup("_lightCoef", ofVec3f(0.1, 0.1, 0.2), ofVec3f(.0, .0, .0), ofVec3f(1.0, 1.0, 1.0)));
 	//gui.add(absorbK.setup("absorbK", ofVec3f(0.15, 0.091, 0.02), ofVec3f(.0, .0, .0), ofVec3f(1.0, 1.0, 1.0)));
-	gui.add(absorbK.setup("absorbK", ofVec3f(0.34, 0.35, 0.34), ofVec3f(.0, .0, .0), ofVec3f(1.0, 1.0, 1.0)));
-	gui.add(renderMode.setup("renderMode", 0, 0, 2));
+	gui.add(absorbK.setup("absorbK", ofVec3f(0.34, 0.22, 0.10), ofVec3f(.0, .0, .0), ofVec3f(1.0, 1.0, 1.0)));
+	gui.add(renderMode.setup("renderMode", 2, 0, 2));
+
+	gui.add(albedoColor.set("AlbedoColor", ofFloatColor(0.3, 0.45, 0.45), ofFloatColor(0.0, 0.0, 0.0), ofFloatColor(1.0, 1.0, 1.0)));
+	gui.add(specularColor.set("SpecularColor", ofFloatColor(1.0, 1.0, 1.0), ofFloatColor(0.0, 0.0, 0.0), ofFloatColor(1.0, 1.0, 1.0)));
+	gui.add(ambientColor.set("AmbientColor", ofFloatColor(0.0, 0.03, 0.03), ofFloatColor(0.0, 0.0, 0.0), ofFloatColor(1.0, 1.0, 1.0)));
+	
 }
 //--------------------------------------------------------------
 void ofApp::initFbo() {

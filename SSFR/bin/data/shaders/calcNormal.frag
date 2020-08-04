@@ -42,27 +42,8 @@ void main(){
     }
     vec3 N = normalize(cross(ddx, ddy));
     
-    //N = normalize(viewMatrix * vec4(N, 0.0)).xyz;
-    
-    
+    //Todo
+    //N.y *= -1.0;
     N = N * 0.5 + vec3(0.5, 0.5, 0.5);
     fragOut = vec4(N, 1.0);
-    
-    //fragOut = vec4(vTexCoord/screenScale, 0.0, 1.0);
-    //fragOut = vec4(vec3(depth), 1.0);
-
-
-    //debug
-    /*
-    vec2 _uv = vTexCoord / screenScale;
-    _uv = _uv * 2.0;
-    _uv = _uv - vec2(1.0 ,1.0);
-    vec4 clipPos = vec4(_uv, depth , 1.0);
-    vec4 _viewPos =  invProjectionMatrix * clipPos;
-   
-    fragOut = vec4(_viewPos.xyz/_viewPos.w, 1.0);
-    //fragOut = vec4(clipPos.xyz, 1.0);   
-    */ 
-   
-    
 }

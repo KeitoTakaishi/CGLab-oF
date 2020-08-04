@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<group>
+	<particleSize>6.4</particleSize>
+	<blurScale>0.08</blurScale>
+	<blurDepthFallOff>10</blurDepthFallOff>
+	<nearClip>0.4</nearClip>
+	<farClip>1500</farClip>
+	<alphaCoef>0.1</alphaCoef>
+	<albedoColor>0, 0.8, 1</albedoColor>
+	<lightDir>200, 0.8, 0</lightDir>
+	<_lightCoef>0.1, 0.1, 0.2</_lightCoef>
+	<absorbK>0.34, 0.35, 0.34</absorbK>
+	<renderMode>2</renderMode>
+	<AmbientColor>0.2, 0.2, 0.2, 1</AmbientColor>
+</group>

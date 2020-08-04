@@ -12,7 +12,7 @@ class CubeMap
 		void bind();
 		void unbind();
 
-	private:
+	//private:
 		unsigned int textureObject;
 };
 

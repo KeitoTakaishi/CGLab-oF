@@ -42,8 +42,13 @@ class ofApp : public ofBaseApp{
 		ofxFloatSlider nearClip;
 		ofxFloatSlider farClip;
 		ofxFloatSlider alphaCoef;
-		ofxVec3Slider albedoColor;
-		ofxVec3Slider lightDir;
+		
+		//ofxVec3Slider lightDir;
+		//ofxVec3Slider lightPos;
+		ofParameter<ofVec3f> lightPos;
+		ofParameter<ofFloatColor> albedoColor;
+		ofParameter<ofFloatColor> ambientColor;
+		ofParameter<ofFloatColor> specularColor;
 		ofxVec3Slider absorbK;
 		ofxVec3Slider lightCoef;
 		ofxIntSlider renderMode;//Thickness, Absorb, Final
@@ -56,7 +61,7 @@ class ofApp : public ofBaseApp{
 		//Light
 		ofVboMesh lightMesh;
 		ofSpherePrimitive pointLight;
-		ofVec3f lightPos;
+		//ofVec3f lightPos;
 		
 		//CubeMap
 		CubeMap cubeMap;

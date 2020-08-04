@@ -3,6 +3,7 @@
 void CubeMap::setFromImages(int size, ofImage img_px, ofImage img_nx, ofImage img_py, ofImage img_ny, ofImage img_pz, ofImage img_nz)
 {
 	glGenTextures(1, &textureObject);
+	cout << "CubeMap ID : " << textureObject << endl;
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureObject);
 
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA, size, size, 0, GL_RGBA, GL_UNSIGNED_BYTE, img_px.getPixels().getData());
