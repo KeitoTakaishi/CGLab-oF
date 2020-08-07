@@ -18,8 +18,9 @@ void main(){
         //RenderTexture
         gl_Position =  vec4(position, 1.0);
         vTexCoord = texcoord;
-    }else{
+    }else if(type == 2){
         //Geometry
+        //gl_Position = model * vec4(position, 1.0);
         gl_Position = proj * view * model * vec4(position, 1.0);
         vTexCoord = texcoord;
 
@@ -27,5 +28,9 @@ void main(){
         ref.y *= -1.0;
         vNormal   = (vec4((ref), 0.0)).xyz;
         //lightDir_screen = proj * view * model * vec4(_lightDir, 1.0);
+    }else{
+         //Geometry
+        gl_Position = proj*  view * model * vec4(position, 1.0);
+        vTexCoord = texcoord;
     }
 }

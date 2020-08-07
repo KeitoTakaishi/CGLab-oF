@@ -5,7 +5,7 @@
 int main() {
 	//    ofSetupOpenGL(1024,768,OF_WINDOW);            // <-------- setup the GL context
 	ofGLWindowSettings s;
-	s.setGLVersion(3, 2);
+	s.setGLVersion(4, 1);
 	s.setSize(1024, 768);
 	//s.setSize(800, 600);
 	ofCreateWindow(s);

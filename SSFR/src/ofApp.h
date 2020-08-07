@@ -16,6 +16,7 @@ class ofApp : public ofBaseApp{
 		void preLoad();
 		void initGUI();
 		void initFbo();
+		void initGBuffer();
 		
 		ofShader particle;
 		ofShader depthPass;
@@ -23,7 +24,8 @@ class ofApp : public ofBaseApp{
 		ofShader calcNormalPass;
 		ofShader thicknessPass;
 		ofShader renderPass;
-		
+		ofShader raymarchPass;
+
 
 		//particle parameters
 		FluidSolver* fluidSolver;
@@ -34,8 +36,10 @@ class ofApp : public ofBaseApp{
 		ofFbo calcNormalFbo;
 		ofFbo thicknessFbo;
 		ofFbo renderFbo;
+		ofFbo g_buffer;//rayMarching(depth, normal)
 		
 		ofMesh quad;
+		ofMesh quad_raymarch;
 		ofxFloatSlider particleSize;
 		ofxFloatSlider blurScale;
 		ofxFloatSlider blurDepthFallOff;

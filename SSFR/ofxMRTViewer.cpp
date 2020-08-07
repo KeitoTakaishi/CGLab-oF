@@ -23,14 +23,14 @@ void ofxMRTViewer::preview(ofFbo& _mrt) {
 		}
 		shader.begin();
 		shader.setUniform1f("n", (float)i);
-		shader.setUniformTexture("tex", _mrt.getTexture(i), i);
+		shader.setUniformTexture("tex", _mrt.getTexture(0), 0);
 		panels[i]->draw();
 		shader.end();
 		ofPopMatrix();
 	}
 }
 
-void ofxMRTViewer::preview(ofFbo& _normal, ofFbo& _depth, ofFbo& _blurDepth) {
+void ofxMRTViewer::preview(ofFbo& _normal, ofFbo& _depth, ofFbo& _blurDepth, ofFbo &_raymarch) {
 	float w = ofGetWidth();
 	for (int i = 0; i < texNum; i++) {
 		ofPushMatrix();
@@ -41,7 +41,7 @@ void ofxMRTViewer::preview(ofFbo& _normal, ofFbo& _depth, ofFbo& _blurDepth) {
 			ofTranslate(w - panels[i]->getWidth() / 2.0, panels[i]->getHeight()*(i + 0.5));
 		}
 		shader.begin();
-		shader.setUniform1f("n", (float)i);
+
 		shader.setUniform2f("size", ofVec2f(ofGetWidth(), ofGetHeight()));
 		if (i == 0) {
 			shader.setUniformTexture("tex", _normal.getTexture(0), i);
@@ -51,6 +51,11 @@ void ofxMRTViewer::preview(ofFbo& _normal, ofFbo& _depth, ofFbo& _blurDepth) {
 		}
 		else if (i == 2) {
 			shader.setUniformTexture("tex", _blurDepth.getTexture(0), i);
+			
+		}
+		else if (i == 3) {
+			shader.setUniformTexture("tex", _raymarch.getTexture(0), i);
+			
 		}
 		
 		panels[i]->draw();

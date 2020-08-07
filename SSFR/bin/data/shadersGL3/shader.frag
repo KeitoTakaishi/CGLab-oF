@@ -1,6 +1,5 @@
-#version 150
+#version 410
 uniform sampler2DRect tex;
-uniform float n;
 uniform vec2 size;
 in vec2 texCoordVarying;
 

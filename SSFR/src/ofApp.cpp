@@ -12,11 +12,12 @@ void ofApp::setup(){
 	ofSetVerticalSync(false);
 	preLoad();
 	initFbo();
+	initGBuffer();
 	initGUI();
 
 	fluidSolver = new FluidSolver();
 	fluidSolver->init();
-	mrtViewer = new ofxMRTViewer(3);//depth, blur, normal, thickness
+	mrtViewer = new ofxMRTViewer(4);//depth, blur, normal, thickness
 
 	
 	cam.setupPerspective(true, 60.0f, nearClip, farClip);
@@ -60,6 +61,30 @@ void ofApp::update(){
 	//lightPos = ofVec3f(250.0 * sin(t), 50.0, 250.0*cos(t));
 
 
+	ofMatrix4x4 view = ofGetCurrentViewMatrix();
+	ofMatrix4x4 invView = view.getInverse();
+	ofMatrix4x4 proj = cam.getProjectionMatrix();
+	//--------------------------------------------------------
+	//Gbuffer
+	g_buffer.begin();
+	//g_buffer.activateAllDrawBuffers();
+	//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	ofClear(0);
+	raymarchPass.begin();
+	raymarchPass.setUniform2f("u_resolution", ofVec2f(ofGetWidth(), ofGetHeight()));
+	raymarchPass.setUniform3f("u_camPos", cam.getGlobalPosition());
+	raymarchPass.setUniform3f("u_camUp", cam.getUpDir());
+	raymarchPass.setUniform1f("u_fov", cam.getFov());
+	raymarchPass.setUniform1f("u_far", cam.getFarClip());
+	raymarchPass.setUniform1f("u_near", cam.getNearClip());
+	raymarchPass.setUniformMatrix4f("view", view);
+	raymarchPass.setUniformMatrix4f("projection", proj);
+	raymarchPass.setUniform1f("u_radius", 250.0);
+	quad_raymarch.draw();
+	raymarchPass.end();
+	g_buffer.end();
+
 	//--------------------------------------------------------
 	//depth
 	
@@ -69,9 +94,7 @@ void ofApp::update(){
 		cam.begin();
 		ofEnableDepthTest();
 
-		ofMatrix4x4 view = ofGetCurrentViewMatrix();
-		ofMatrix4x4 invView = view.getInverse();
-		ofMatrix4x4 proj = cam.getProjectionMatrix();
+		
 		depthPass.setUniform1f("size", particleSize);
 		depthPass.setUniform1f("time", ofGetElapsedTimef());
 		depthPass.setUniform2f("camClips", ofVec2f(nearClip, farClip));
@@ -153,7 +176,8 @@ void ofApp::update(){
 		ofDisableBlendMode();
 	}
 	//--------------------------------------------------------
-	//render
+
+	//Fluid-Render
 	cubeMap.bind();
 	renderFbo.begin();
 	ofEnableDepthTest();
@@ -172,7 +196,7 @@ void ofApp::update(){
 	renderPass.setUniformMatrix4f("view", view);
 	renderPass.setUniformMatrix4f("proj", proj);
 	ofSpherePrimitive pointLight;
-	pointLight.setPosition(ofVec3f(lightPos));
+	//pointLight.setPosition(ofVec3f(lightPos));
 	lightMesh = pointLight.getMesh();
 	lightMesh.draw();
 	
@@ -218,15 +242,19 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 	//ofBackground(0.0, 0.0, 0.0);
-
 	//ofEnableAlphaBlending();
+
+
 	renderFbo.draw(0.0, 0.0);
+	//g_buffer.draw(0.0, 0.0);
 	ofDisableDepthTest();
 	gui.draw();
 	
 	
 	if (isPreview) {
-		mrtViewer->preview(depthFbo, thicknessFbo, calcNormalFbo);
+		cout << g_buffer.getTexture(0).getTextureData().textureID << endl;
+		mrtViewer->preview(depthFbo, thicknessFbo, calcNormalFbo, g_buffer);
+		//mrtViewer->preview(calcNormalFbo);
 	}
 }
 
@@ -237,11 +265,11 @@ void ofApp::keyPressed(int key){
 	}
 	else if ('p') {
 		isPreview = !isPreview;
-		cout << isPreview << endl;
 	}
 }
 //--------------------------------------------------------------
 void ofApp::preLoad() {
+	raymarchPass.load("shaders/raymarch.vert", "shaders/raymarch.frag");
 	depthPass.setGeometryInputType(GL_POINTS);
 	depthPass.setGeometryOutputType(GL_TRIANGLE_STRIP);
 	depthPass.setGeometryOutputCount(4);
@@ -318,4 +346,68 @@ void ofApp::initFbo() {
 	quad.addIndex(2);
 	quad.addIndex(3);
 	quad.addIndex(0);
+
+	
+	cout << "depthFbo : " << depthFbo.getTexture().getTextureData().textureID << endl;
+	cout << "blur1Fbo : " << blurFbo1.getTexture().getTextureData().textureID << endl;
+	cout << "blur2Fbo : " << blurFbo2.getTexture().getTextureData().textureID << endl;
+	cout << "normalFbo : " << calcNormalFbo.getTexture().getTextureData().textureID << endl;
+	cout << "renderFbo : " << renderFbo.getTexture().getTextureData().textureID << endl;
+	
+}
+//--------------------------------------------------------------
+void ofApp::initGBuffer() {
+	/*
+	vector<GLint> formats = { GL_RGBA32F};
+	ofFbo::Settings settings;
+	settings.width = ofGetWidth();
+	settings.height = ofGetHeight();
+	settings.textureTarget = GL_TEXTURE_2D;
+	settings.wrapModeHorizontal = GL_CLAMP_TO_EDGE;
+	settings.wrapModeVertical = GL_CLAMP_TO_EDGE;
+	settings.minFilter = GL_NEAREST;
+	settings.maxFilter = GL_NEAREST;
+	settings.numColorbuffers = 1;
+	//settings.numColorbuffers = 2;
+	settings.colorFormats = formats;
+	settings.numSamples = 4;
+	settings.useDepth = true;
+	settings.useStencil = true;
+	*/
+	ofFbo::Settings fboSetting;
+	fboSetting.width = ofGetWidth();
+	fboSetting.height = ofGetHeight();
+	fboSetting.numColorbuffers = 1;
+	fboSetting.useDepth = true;
+	fboSetting.useStencil = true;
+	fboSetting.depthStencilAsTexture = true;
+	fboSetting.depthStencilInternalFormat;
+	fboSetting.internalformat = GL_RGBA32F;
+	fboSetting.wrapModeHorizontal = GL_CLAMP_TO_EDGE;
+	fboSetting.wrapModeVertical = GL_CLAMP_TO_EDGE;
+	fboSetting.minFilter = GL_LINEAR;
+	fboSetting.maxFilter = GL_LINEAR;
+	g_buffer.allocate(fboSetting);
+	g_buffer.checkStatus();
+
+
+	//cout << "gBuffer : " << g_buffer.getTexture().getTextureData().textureID << endl;
+
+	quad_raymarch.addVertex(ofVec3f(-1.0, -1.0));
+	quad_raymarch.addVertex(ofVec3f(-1.0, 1.0));
+	quad_raymarch.addVertex(ofVec3f(1.0, 1.0));
+	quad_raymarch.addVertex(ofVec3f(1.0, -1.0));
+
+	quad_raymarch.addTexCoord(ofVec2f(.0, .0));
+	quad_raymarch.addTexCoord(ofVec2f(.0, 1.0));
+	quad_raymarch.addTexCoord(ofVec2f(1.0, 1.0));
+	quad_raymarch.addTexCoord(ofVec2f(1.0, .0));
+
+	quad_raymarch.addIndex(0);
+	quad_raymarch.addIndex(1);
+	quad_raymarch.addIndex(2);
+
+	quad_raymarch.addIndex(2);
+	quad_raymarch.addIndex(3);
+	quad_raymarch.addIndex(0);
 }
