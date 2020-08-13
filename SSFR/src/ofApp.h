@@ -53,6 +53,7 @@ class ofApp : public ofBaseApp{
 		ofParameter<ofFloatColor> albedoColor;
 		ofParameter<ofFloatColor> ambientColor;
 		ofParameter<ofFloatColor> specularColor;
+		ofParameter<float>shininess;
 		ofxVec3Slider absorbK;
 		ofxVec3Slider lightCoef;
 		ofxIntSlider renderMode;//Thickness, Absorb, Final

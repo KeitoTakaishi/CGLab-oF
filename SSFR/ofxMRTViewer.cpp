@@ -31,6 +31,7 @@ void ofxMRTViewer::preview(ofFbo& _mrt) {
 }
 
 void ofxMRTViewer::preview(ofFbo& _normal, ofFbo& _depth, ofFbo& _blurDepth, ofFbo &_raymarch) {
+	_depth.activateAllDrawBuffers();
 	float w = ofGetWidth();
 	for (int i = 0; i < texNum; i++) {
 		ofPushMatrix();
@@ -47,14 +48,16 @@ void ofxMRTViewer::preview(ofFbo& _normal, ofFbo& _depth, ofFbo& _blurDepth, ofF
 			shader.setUniformTexture("tex", _normal.getTexture(0), i);
 		}
 		else if (i == 1) {
-			shader.setUniformTexture("tex", _depth.getTexture(0), i);
+			shader.setUniformTexture("tex", _normal.getTexture(1), i);
+			//shader.setUniformTexture("tex", _depth.getTexture(0), i);
 		}
 		else if (i == 2) {
-			shader.setUniformTexture("tex", _blurDepth.getTexture(0), i);
+			shader.setUniformTexture("tex", _depth.getTexture(0), i);
 			
 		}
 		else if (i == 3) {
 			shader.setUniformTexture("tex", _raymarch.getTexture(0), i);
+			//shader.setUniformTexture("tex", _depth.getTexture(1), i);
 			
 		}
 		

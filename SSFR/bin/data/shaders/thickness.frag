@@ -1,4 +1,4 @@
-#version 150
+#version 400
 precision highp float;
 
 in vec3 vpos;
@@ -14,6 +14,14 @@ float LinearizeDepth(float depth)
     //vec2 camClips = vec2(0.01, 500.0);
 	return (2.0 * camClips.x) / (camClips.y + camClips.x - depth * (camClips.y - camClips.x));  
 } 
+
+float Linear01Depth( float z )
+{
+    //x は (1-far/near)、 y は (far/near)
+    float near = camClips.x;
+    float far = camClips.y;
+    return 1.0 / ((1.0 - far/near) * z + (far/near));
+}
 
 
 void main() {
@@ -37,13 +45,13 @@ void main() {
     vec4 viewFrontPos = vec4(vpos.xyz + normalize(normal) * size,  1.0);
 	vec4 screenSpaceFrontPos =  projectionMatrix * viewFrontPos;
     float depth = screenSpaceFrontPos.z / screenSpaceFrontPos.w;//表までのdepth
-    depth = LinearizeDepth(depth);
-    depth = (depth * 1.0) * 0.5;
+    depth = Linear01Depth(depth);
+    //depth = (depth * 1.0) * 0.5;
 
     vec4 viewBackPos = vec4(vpos.xyz - normalize(normal) * size,  1.0);
 	vec4 screenSpaceBackPos =  projectionMatrix * viewBackPos;
-    depth = LinearizeDepth(screenSpaceBackPos.z / screenSpaceBackPos.w) - depth;//表までのdepth
-    depth = (depth * 1.0) * 0.5;
+    depth = Linear01Depth(screenSpaceBackPos.z / screenSpaceBackPos.w) - depth;//表までのdepth
+    //depth = (depth * 1.0) * 0.5;
     
     fragColor = vec4(vec3(depth ), 1.0);
 }

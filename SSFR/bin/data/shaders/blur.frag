@@ -1,4 +1,4 @@
-#version 150
+#version 400
 precision highp float;
 uniform sampler2DRect depthTex;
 uniform vec2 direction;
@@ -45,9 +45,9 @@ void main(){
 
     
     if(depth > 1.0 || depth < 0.001){
-        fragColor = vec4(vec3(0.0), 1.0);
+        //fragColor = vec4(vec3(0.0), 1.0);
     }else{
-        fragColor = vec4(vec3(sum), 1.0);
+        // /fragColor = vec4(vec3(sum), 1.0);
     }
     
     fragColor = vec4(vec3(sum), 1.0);

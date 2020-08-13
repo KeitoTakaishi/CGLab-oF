@@ -8,7 +8,7 @@ public:
 	~FluidSolver();
 
 	void init();
-	void update();
+	void update(ofEasyCam& cam);
 	void draw();
 
 	int particleNum;
@@ -18,5 +18,6 @@ public:
 	vector<ofVec3f> pos;
 	vector<ofVec3f> vel;
 	ofVec3f* posParticles;
+	ofShader shader;
 };
 

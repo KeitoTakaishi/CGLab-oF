@@ -1,4 +1,4 @@
-#version 410
+#version 400
 
 uniform float u_time;
 uniform vec2 u_resolution;
@@ -107,11 +107,13 @@ void main()
         distance = distanceFunc(rPos);
         rLen += distance;
         rPos = cPos + ray * rLen;
+
     }
     
     // hit check
     if(abs(distance) < 0.001){
-        outputColor = vec4(vec3(1.0), 1.0);
+        
+        outputColor = vec4(vec3(vec3(0.5)+ 0.5*getNormal(rPos)), 1.0);
     }else{
         outputColor = vec4(vec3(0.0, 0.0, 0.0), 1.0);
     }
