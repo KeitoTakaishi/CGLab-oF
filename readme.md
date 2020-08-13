@@ -14,7 +14,7 @@ PreviewDepth
 WIP
 
 <img src="./ReferenceImage/SSFR.gif" alt="" title="SSFR01">
-
+<img src="./ReferenceImage/SSFR.jpg" alt="" title="SSFR01">
 ## Thickness
 - Thickness
 <img src="./ReferenceImage/Thickness01.jpg" alt="" title="Thickness">
