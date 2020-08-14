@@ -7,10 +7,13 @@ uniform int type;//RenderTexture of Geometry
 uniform sampler2DRect normalTex;
 uniform sampler2DRect thicknessTex;
 uniform sampler2DRect positionTex;
+uniform sampler2DRect rayMarchingTex;
+
 
 uniform samplerCube	EnvMap;
 
 uniform mat4 invProjectionMatrix;
+uniform mat4 viewMatrix;
 uniform vec2 _screenScale;
 
 //Lighting===============
@@ -50,9 +53,9 @@ void main(){
         vec3 normal = texture(normalTex, vTexCoord*vec2(1024.0, 768.0)).xyz;
         float thickness = texture(thicknessTex, vTexCoord*vec2(1024.0, 768.0)).x;
         vec3 viewPos = texture(positionTex, vTexCoord*vec2(1024.0, 768.0)).xyz;
-        
+        vec3 raymarching = texture(rayMarchingTex, vTexCoord*vec2(1024.0, 768.0)).xyz;
 
-        if(length(normal) == 0.0){
+        if(length(raymarching) == 0.0){
             discard;
         }
         //normal.y = 1.0 -normal.y;
@@ -80,9 +83,10 @@ void main(){
         vec3 absorbColor = vec3(exp(-_absorbK.x * _d), exp(-_absorbK.y * _d), exp(-_absorbK.z * _d));
                 
         if(_renderMode == 0){  
-            fragOut = vec4(vec3(normal), 1.0);
+            fragOut = vec4(vec3(raymarching), 0.5);
         }else if(_renderMode == 1){
-            fragOut = vec4(vec3(_albedoColor * diffuse + _specularColor * specular + _ambientColor), 1.0); 
+
+            fragOut = vec4(vec3(_albedoColor * diffuse + _specularColor * specular + _ambientColor), 0.8) + vec4( mix(vec3(0.3), raymarching, 0.3), 1.0);
             //fragOut = vec4(vec3(diffuse), 0.7); 
         }else if(_renderMode == 2){
             vec3 lighting = vec3(_albedoColor * diffuse + _specularColor * specular + _ambientColor);
@@ -92,6 +96,7 @@ void main(){
         //Geometry
         fragOut = vec4(1.0, 0.0, 0.0, 1.0);
     }else if(type == 2){
-        fragOut = vec4(texture(EnvMap, normalize(vNormal).rgb, 0.1)) * vec4(1.0, 1.0, 1.0, 0.2);
+        fragOut = vec4(texture(EnvMap, normalize(vNormal).rgb, 1.0));
+        //fragOut = vec4(1.0, 0.0, 0.0, 1.0);
     }
 }

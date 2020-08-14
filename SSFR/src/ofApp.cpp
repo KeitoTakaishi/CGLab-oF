@@ -46,6 +46,7 @@ void ofApp::update(){
 	ofSetWindowTitle(to_string(ofGetFrameRate()));
 	cam.setNearClip(nearClip);
 	cam.setFarClip(farClip);
+	cam.setFov(fov);
 	float t = ofGetElapsedTimef();
 	//fluidSolver->update(cam);
 	t = t * PI / 180.0 * 10.0;
@@ -57,6 +58,7 @@ void ofApp::update(){
 	ofMatrix4x4 proj = cam.getProjectionMatrix();
 	//--------------------------------------------------------
 	//Gbuffer-RayMarchig
+	cubeMap.bind();
 	g_buffer.begin();
 	
 	//g_buffer.activateAllDrawBuffers();
@@ -77,6 +79,7 @@ void ofApp::update(){
 	raymarchPass.end();
 	
 	g_buffer.end();
+	cubeMap.unbind();
 
 	//--------------------------------------------------------
 	//depth
@@ -187,7 +190,7 @@ void ofApp::update(){
 	cubeMap.bind();
 	renderFbo.begin();
 	ofEnableDepthTest();
-	ofEnableAlphaBlending();
+	
 	//ofEnableBlendMode(OF_BLENDMODE_ADD);
 	ofClear(0);
 	cam.begin();
@@ -208,22 +211,23 @@ void ofApp::update(){
 	
 	//lightMesh = pointLight.getMesh();
 	//lightMesh.draw();
-	
+	ofDisableAlphaBlending();
 	//Room
 	ofBoxPrimitive room;
-	room.set(2000.0);
+	room.set(10.0);
 	model.setTranslation(0.0, 0.0, 0.0);
 	renderPass.setUniformMatrix4f("model", model);
 	renderPass.setUniform1i("type", 2);
 	lightMesh = room.getMesh();
-	//lightMesh.draw();
-	
-	
+	lightMesh.draw();
+	//ofEnableAlphaBlending();
 	//Quad-RemderTexture
 	renderPass.setUniform1i("type", 0);
 	renderPass.setUniformTexture("normalTex", calcNormalFbo.getTexture(0), 1);
-	renderPass.setUniformTexture("thicknessTex", thicknessFbo.getTexture(0), 3);
 	renderPass.setUniformTexture("positionTex", depthFbo.getTexture(1), 2);
+	renderPass.setUniformTexture("thicknessTex", thicknessFbo.getTexture(0), 3);
+	renderPass.setUniformTexture("rayMarchingTex", g_buffer.getTexture(0), 4);
+
 
 	
 	calcNormalPass.setUniformMatrix4f("invProjectionMatrix", proj.getInverse());
@@ -250,6 +254,7 @@ void ofApp::update(){
 	renderFbo.end();
 	ofDisableBlendMode();
 	cubeMap.unbind();
+	
 	
 }
 
@@ -310,6 +315,8 @@ void ofApp::initGUI() {
 	gui.add(blurDepthFallOff.setup("blurDepthFallOff", 10.0, 0.0, 30.0));
 	gui.add(nearClip.setup("nearClip", 0.3, 0.1, 10.0));
 	gui.add(farClip.setup("farClip", 50.0, 10.0, 500.0));
+	gui.add(fov.setup("fov", 60.0, 10.0, 150.0));
+	
 	gui.add(alphaCoef.setup("alphaCoef", 0.1, 0.0, 1.0));
 	gui.add(lightPos.set("lightPos", ofVec3f(40.0, -200, 114.0), ofVec3f(-200.0, -200.0, -200.0), ofVec3f(200.0, 200.0, 200.0)));
 	gui.add(lightCoef.setup("_lightCoef", ofVec3f(0.1, 0.1, 0.2), ofVec3f(.0, .0, .0), ofVec3f(1.0, 1.0, 1.0)));

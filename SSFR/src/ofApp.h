@@ -45,6 +45,8 @@ class ofApp : public ofBaseApp{
 		ofxFloatSlider blurDepthFallOff;
 		ofxFloatSlider nearClip;
 		ofxFloatSlider farClip;
+		ofxFloatSlider fov;
+		
 		ofxFloatSlider alphaCoef;
 		
 		//ofxVec3Slider lightDir;
