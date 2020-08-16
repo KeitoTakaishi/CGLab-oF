@@ -26,12 +26,12 @@ void ofApp::setup(){
 
 	//CubeMap
 	ofDisableArbTex();
-	img[0].load("tex/cube_PX.png");
-	img[1].load("tex/cube_NX.png");
-	img[2].load("tex/cube_PY.png");
-	img[3].load("tex/cube_NY.png");
-	img[4].load("tex/cube_PZ.png");
-	img[5].load("tex/cube_NZ.png");
+	img[0].load("tex/px.png");
+	img[1].load("tex/nx.png");
+	img[2].load("tex/py.png");
+	img[3].load("tex/ny.png");
+	img[4].load("tex/pz.png");
+	img[5].load("tex/nz.png");
 
 	
 	cubeMap.setFromImages(256, img[0], img[1], img[2], img[3], img[4], img[5]);
@@ -60,10 +60,6 @@ void ofApp::update(){
 	//Gbuffer-RayMarchig
 	cubeMap.bind();
 	g_buffer.begin();
-	
-	//g_buffer.activateAllDrawBuffers();
-	//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	ofClear(0);
 	raymarchPass.begin();
 	raymarchPass.setUniform2f("u_resolution", ofVec2f(ofGetWidth(), ofGetHeight()));
@@ -74,7 +70,11 @@ void ofApp::update(){
 	raymarchPass.setUniform1f("u_near", cam.getNearClip());
 	raymarchPass.setUniformMatrix4f("view", view);
 	raymarchPass.setUniformMatrix4f("projection", proj);
-	raymarchPass.setUniform1f("u_radius", 250.0);
+	raymarchPass.setUniform1f("u_radius", 180.0);
+	raymarchPass.setUniform1f("eta", eta);
+	raymarchPass.setUniform1f("refrectionFactor", refrectionFactor);
+	
+	
 	quad_raymarch.draw();
 	raymarchPass.end();
 	
@@ -190,8 +190,8 @@ void ofApp::update(){
 	cubeMap.bind();
 	renderFbo.begin();
 	ofEnableDepthTest();
-	
-	//ofEnableBlendMode(OF_BLENDMODE_ADD);
+	//ofEnableAlphaBlending();
+
 	ofClear(0);
 	cam.begin();
 	//ofDrawAxis(500);
@@ -209,9 +209,6 @@ void ofApp::update(){
 	renderPass.setUniformMatrix4f("proj", proj);
 	//ofSpherePrimitive pointLight;
 	
-	//lightMesh = pointLight.getMesh();
-	//lightMesh.draw();
-	ofDisableAlphaBlending();
 	//Room
 	ofBoxPrimitive room;
 	room.set(10.0);
@@ -220,7 +217,7 @@ void ofApp::update(){
 	renderPass.setUniform1i("type", 2);
 	lightMesh = room.getMesh();
 	lightMesh.draw();
-	//ofEnableAlphaBlending();
+	ofEnableAlphaBlending();
 	//Quad-RemderTexture
 	renderPass.setUniform1i("type", 0);
 	renderPass.setUniformTexture("normalTex", calcNormalFbo.getTexture(0), 1);
@@ -245,6 +242,8 @@ void ofApp::update(){
 	renderPass.setUniform3f("_lightCoef", lightCoef);
 	renderPass.setUniform3f("_absorbK", absorbK);
 	renderPass.setUniform1i("_renderMode", renderMode);
+	renderPass.setUniform1f("_transparent", implicitSurfaceTransparent);
+
 	quad.draw();
 	
 	cam.end();
@@ -316,10 +315,12 @@ void ofApp::initGUI() {
 	gui.add(nearClip.setup("nearClip", 0.3, 0.1, 10.0));
 	gui.add(farClip.setup("farClip", 50.0, 10.0, 500.0));
 	gui.add(fov.setup("fov", 60.0, 10.0, 150.0));
-	
+	gui.add(eta.setup("eta", 0.1, 0.0, 1.0));
+	gui.add(refrectionFactor.setup("refrectionFactor", 0.1, 0.0, 1.0));
+
 	gui.add(alphaCoef.setup("alphaCoef", 0.1, 0.0, 1.0));
 	gui.add(lightPos.set("lightPos", ofVec3f(40.0, -200, 114.0), ofVec3f(-200.0, -200.0, -200.0), ofVec3f(200.0, 200.0, 200.0)));
-	gui.add(lightCoef.setup("_lightCoef", ofVec3f(0.1, 0.1, 0.2), ofVec3f(.0, .0, .0), ofVec3f(1.0, 1.0, 1.0)));
+	//gui.add(lightCoef.setup("_lightCoef", ofVec3f(0.1, 0.1, 0.2), ofVec3f(.0, .0, .0), ofVec3f(1.0, 1.0, 1.0)));
 	gui.add(absorbK.setup("absorbK", ofVec3f(0.34, 0.22, 0.10), ofVec3f(.0, .0, .0), ofVec3f(1.0, 1.0, 1.0)));
 	gui.add(renderMode.setup("renderMode", 1, 0, 2));
 
@@ -327,6 +328,7 @@ void ofApp::initGUI() {
 	gui.add(specularColor.set("SpecularColor", ofFloatColor(1.0, 1.0, 1.0), ofFloatColor(0.0, 0.0, 0.0), ofFloatColor(1.0, 1.0, 1.0)));
 	gui.add(ambientColor.set("AmbientColor", ofFloatColor(0.0, 0.03, 0.03), ofFloatColor(0.0, 0.0, 0.0), ofFloatColor(1.0, 1.0, 1.0)));
 	gui.add(shininess.set("Shininess", 2.0, 2.0, 200.0));
+	gui.add(implicitSurfaceTransparent.setup("implicitSurfaceTransparent", 0.5, 0.0, 1.0));
 	
 	
 }

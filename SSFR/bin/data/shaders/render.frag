@@ -29,7 +29,8 @@ uniform float alphaCoef;
 uniform vec3 _absorbK;
 uniform vec3 _lightCoef;
 uniform int _renderMode;
-
+//Raymarching
+uniform float _transparent;
 
 in vec2 vTexCoord;
 in vec3 vNormal;
@@ -58,6 +59,7 @@ void main(){
         if(length(raymarching) == 0.0){
             discard;
         }
+
         //normal.y = 1.0 -normal.y;
         normal = center_zero_Normalize(normal);
         
@@ -79,18 +81,20 @@ void main(){
 
 
         //absorbColor
-        float _d = clamp(thickness, 0.0, 200.0);
+        float _d = clamp(thickness, 0.0, 50.0);
         vec3 absorbColor = vec3(exp(-_absorbK.x * _d), exp(-_absorbK.y * _d), exp(-_absorbK.z * _d));
                 
         if(_renderMode == 0){  
-            fragOut = vec4(vec3(raymarching), 0.5);
+            fragOut = vec4(vec3(raymarching), _transparent);
         }else if(_renderMode == 1){
-
-            fragOut = vec4(vec3(_albedoColor * diffuse + _specularColor * specular + _ambientColor), 0.8) + vec4( mix(vec3(0.3), raymarching, 0.3), 1.0);
-            //fragOut = vec4(vec3(diffuse), 0.7); 
+            fragOut = vec4(vec3(_albedoColor * diffuse + _specularColor * specular + _ambientColor), 0.4) + vec4(vec3(raymarching), _transparent);
+            //fragOut = vec4(vec3(_albedoColor * diffuse + _specularColor * specular + _ambientColor), 1.0-_transparent);
+            //fragOut = vec4(vec3(raymarching), _transparent);
         }else if(_renderMode == 2){
-            vec3 lighting = vec3(_albedoColor * diffuse + _specularColor * specular + _ambientColor);
-            fragOut = vec4(lighting, 0.2) + vec4(absorbColor, _d * alphaCoef);
+           
+                vec4 lighting = vec4(_albedoColor * diffuse + _specularColor * specular + _ambientColor, 0.45);
+                vec4 absorb = vec4(absorbColor, _d * 1.0);
+                fragOut = lighting + absorb +  vec4(vec3(raymarching), _transparent);
         }
     }else if(type == 1){
         //Geometry

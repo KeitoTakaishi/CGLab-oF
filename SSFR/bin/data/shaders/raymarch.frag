@@ -1,25 +1,19 @@
 #version 400
 
-uniform float u_time;
 uniform vec2 u_resolution;
 uniform mat4 view;
-uniform mat4 viewMatrix;
-uniform mat4 modelViewMatrix;
-uniform mat4 projectionMatrix;
-uniform mat4 modelViewProjectionMatrix;
-uniform mat4 projection;
 uniform vec3 u_camUp;
 uniform float u_far;
 uniform float u_near;
 uniform float u_radius;
-
 uniform float u_fov;
 uniform vec3 u_camPos;
+uniform float eta;
+uniform float refrectionFactor;
 
 uniform samplerCube cubuMapTex;
-//in vec4 v_world;
-in vec2 v_texcoord;
-in vec4 v_normal;
+//in vec2 v_texcoord;
+//in vec4 v_normal;
 
 //layout (location = 0) out vec4 gPosition;
 //layout (location = 1) out vec4 gNormal;
@@ -28,7 +22,7 @@ out vec4 outputColor;
 #define PI 3.14159265359
 #define DEG2RAD (PI/180.0)
 
-const float sphereSize = 2.0;
+const float sphereSize = 1.75;
 const vec3 lightDir = vec3(-0.577, 0.577, 0.577);
 
 float distanceFunc(vec3 p){
@@ -112,21 +106,24 @@ void main()
     }
     
     // hit
-    vec4 wPos = inverse(view) * vec4(rPos, 1.0);
-    vec3 normal = getNormal(rPos);
-    //normal = normal * 0.5 + 0.5;
-    vec3 viewDir = rPos.xyz - u_camPos;
-    vec3 refl = reflect(-viewDir, normal);
-    vec3 refr = refract(-viewDir, normal, 0.7);
+    vec4 wPos =  view * vec4(rPos, 1.0);
+    vec3 wNormal = getNormal(rPos);//world normal
+    vec3 wView = u_camPos - rPos.xyz;
+    vec3 refDir = reflect(-wView, wNormal);
+    vec3 refrDir = refract(-wView, wNormal, eta);
 
     if(abs(distance) < 0.001){
-        vec3 reflectCol = texture(cubuMapTex, normalize(refl)).rgb;
-        vec3 refractCol = texture(cubuMapTex, normalize(refr)).rgb;
 
-        //outputColor = vec4( vec3(reflectCol + refractCol)+0.5, 1.);
+        //debug
+        refDir.y = -1.0 * refDir.y;
+        refrDir.y *= -1.0; 
+        vec4 reflectCol = texture(cubuMapTex, normalize(refDir));
+        vec4 refractCol = texture(cubuMapTex, normalize(refrDir));
+
+        //outputColor = vec4( mix(reflectCol * vec4(0.8, 0.8, 0.8,1.0), refractCol, refrectionFactor));
+        outputColor = vec4( mix(reflectCol, refractCol, refrectionFactor));
         //outputColor = vec4(vec3(reflectCol), 1.0);
-        outputColor = vec4(vec3(refractCol), 1.0);
-        
+        //outputColor = vec4(vec3(refractCol), 1.0);        
 
     }else{
         outputColor = vec4(vec3(0.0, 0.0, 0.0), 1.0);

@@ -46,6 +46,11 @@ class ofApp : public ofBaseApp{
 		ofxFloatSlider nearClip;
 		ofxFloatSlider farClip;
 		ofxFloatSlider fov;
+		ofxFloatSlider eta;
+		ofxFloatSlider refrectionFactor;
+		ofxFloatSlider implicitSurfaceTransparent;
+
+
 		
 		ofxFloatSlider alphaCoef;
 		
