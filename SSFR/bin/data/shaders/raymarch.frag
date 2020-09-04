@@ -120,10 +120,12 @@ void main()
         vec4 reflectCol = texture(cubuMapTex, normalize(refDir));
         vec4 refractCol = texture(cubuMapTex, normalize(refrDir));
 
-        //outputColor = vec4( mix(reflectCol * vec4(0.8, 0.8, 0.8,1.0), refractCol, refrectionFactor));
-        outputColor = vec4( mix(reflectCol, refractCol, refrectionFactor));
-        //outputColor = vec4(vec3(reflectCol), 1.0);
-        //outputColor = vec4(vec3(refractCol), 1.0);        
+        //outputColor = vec4( mix(reflectCol, refractCol, refrectionFactor));
+        
+        //debug
+        vec4 viewNormal = view * vec4(wNormal, 0.0);
+        outputColor = vec4( viewNormal.xyz, 1.0);
+            
 
     }else{
         outputColor = vec4(vec3(0.0, 0.0, 0.0), 1.0);

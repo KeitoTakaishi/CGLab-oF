@@ -51,5 +51,4 @@ void main(){
     }
     
     fragColor = vec4(vec3(sum), 1.0);
-    //fragColor = vec4(vec3(depth), 1.0);
 }

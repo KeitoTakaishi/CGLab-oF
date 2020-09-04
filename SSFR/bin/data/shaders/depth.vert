@@ -10,7 +10,6 @@ in vec4 color;
 
 
 void main() {
-    
     vec4 p = position;
     gl_Position =  p;
 }

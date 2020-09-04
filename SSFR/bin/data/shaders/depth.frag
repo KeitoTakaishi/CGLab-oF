@@ -31,7 +31,9 @@ void main() {
         discard;
     }
     normal.z = sqrt(1.0 - radius_sq);
-    //normal.z = normal.z * 2.0 - 1.0;
+    
+
+    //viewPos : Particleの中心座標
     vec4 viewPos = vec4(vpos.xyz + normalize(normal) * size,  1.0);
 	vec4 screenSpacePos =  projectionMatrix * viewPos;
     float depth = screenSpacePos.z / screenSpacePos.w;

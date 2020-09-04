@@ -49,6 +49,7 @@ class ofApp : public ofBaseApp{
 		ofxFloatSlider eta;
 		ofxFloatSlider refrectionFactor;
 		ofxFloatSlider implicitSurfaceTransparent;
+		ofxFloatSlider fluidTransparent;
 
 
 		

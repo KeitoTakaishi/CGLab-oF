@@ -82,7 +82,7 @@ void ofApp::update(){
 	cubeMap.unbind();
 
 	//--------------------------------------------------------
-	//depth
+	//depth 0 : depth, 1 : view
 	depthFbo.begin();
 	depthPass.begin();
 	depthFbo.activateAllDrawBuffers();
@@ -162,7 +162,6 @@ void ofApp::update(){
 	//--------------------------------------------------------
 	//thickness
 	{
-		
 		ofDisableDepthTest();
 		ofEnableBlendMode(OF_BLENDMODE_ADD);
 		thicknessFbo.begin();
@@ -184,14 +183,11 @@ void ofApp::update(){
 		
 	}
 	//--------------------------------------------------------
-
 	//Fluid-Render
-	
 	cubeMap.bind();
 	renderFbo.begin();
 	ofEnableDepthTest();
-	//ofEnableAlphaBlending();
-
+	
 	ofClear(0);
 	cam.begin();
 	//ofDrawAxis(500);
@@ -203,7 +199,7 @@ void ofApp::update(){
 	view = ofGetCurrentViewMatrix();
 	proj = cam.getProjectionMatrix();
 	model.setTranslation(lightPos);
-	renderPass.setUniform1i("type", 1);
+	//renderPass.setUniform1i("type", 1);
 	renderPass.setUniformMatrix4f("model", model);
 	renderPass.setUniformMatrix4f("view", view);
 	renderPass.setUniformMatrix4f("proj", proj);
@@ -211,26 +207,28 @@ void ofApp::update(){
 	
 	//Room
 	ofBoxPrimitive room;
-	room.set(10.0);
+	room.set(6.0);
 	model.setTranslation(0.0, 0.0, 0.0);
 	renderPass.setUniformMatrix4f("model", model);
 	renderPass.setUniform1i("type", 2);
 	lightMesh = room.getMesh();
 	lightMesh.draw();
+
+
 	ofEnableAlphaBlending();
 	//Quad-RemderTexture
 	renderPass.setUniform1i("type", 0);
 	renderPass.setUniformTexture("normalTex", calcNormalFbo.getTexture(0), 1);
-	renderPass.setUniformTexture("positionTex", depthFbo.getTexture(1), 2);
+	renderPass.setUniformTexture("positionTex", depthFbo.getTexture(1), 2);//view position
 	renderPass.setUniformTexture("thicknessTex", thicknessFbo.getTexture(0), 3);
 	renderPass.setUniformTexture("rayMarchingTex", g_buffer.getTexture(0), 4);
 
-
+	//calcNormalPass.setUniformMatrix4f("invProjectionMatrix", proj.getInverse());
+	//calcNormalPass.setUniform2f("_screenScale", ofVec2f(ofGetWidth(), ofGetHeight()));
 	
-	calcNormalPass.setUniformMatrix4f("invProjectionMatrix", proj.getInverse());
-	calcNormalPass.setUniform2f("_screenScale", ofVec2f(ofGetWidth(), ofGetHeight()));
 	renderPass.setUniform3f("_camPos", cam.getPosition());
 	renderPass.setUniform1f("alphaCoef", alphaCoef);
+	renderPass.setUniform2f("_screenScale", ofVec2f(ofGetWidth(), ofGetHeight()));
 	
 	//Lightingcolor
 	renderPass.setUniform3f("_albedoColor", ofVec3f(albedoColor.get().r, albedoColor.get().g, albedoColor.get().b));
@@ -242,10 +240,10 @@ void ofApp::update(){
 	renderPass.setUniform3f("_lightCoef", lightCoef);
 	renderPass.setUniform3f("_absorbK", absorbK);
 	renderPass.setUniform1i("_renderMode", renderMode);
+	renderPass.setUniform1f("_fluidTransparent", fluidTransparent);
 	renderPass.setUniform1f("_transparent", implicitSurfaceTransparent);
 
 	quad.draw();
-	
 	cam.end();
 	
 
@@ -253,8 +251,6 @@ void ofApp::update(){
 	renderFbo.end();
 	ofDisableBlendMode();
 	cubeMap.unbind();
-	
-	
 }
 
 //--------------------------------------------------------------
@@ -309,11 +305,11 @@ void ofApp::preLoad() {
 //--------------------------------------------------------------
 void ofApp::initGUI() {
 	gui.setup();
-	gui.add(particleSize.setup("particleSize", 0.1, 0.0, 1.0));
-	gui.add(blurScale.setup("blurScale", 0.08, 0.0, 1.0));
+	gui.add(particleSize.setup("particleSize", 0.075, 0.0, 1.0));
+	gui.add(blurScale.setup("blurScale", 0.195, 0.0, 1.0));
 	gui.add(blurDepthFallOff.setup("blurDepthFallOff", 10.0, 0.0, 30.0));
 	gui.add(nearClip.setup("nearClip", 0.3, 0.1, 10.0));
-	gui.add(farClip.setup("farClip", 50.0, 10.0, 500.0));
+	gui.add(farClip.setup("farClip", 10.0, 10.0, 500.0));
 	gui.add(fov.setup("fov", 60.0, 10.0, 150.0));
 	gui.add(eta.setup("eta", 0.1, 0.0, 1.0));
 	gui.add(refrectionFactor.setup("refrectionFactor", 0.1, 0.0, 1.0));
@@ -321,13 +317,14 @@ void ofApp::initGUI() {
 	gui.add(alphaCoef.setup("alphaCoef", 0.1, 0.0, 1.0));
 	gui.add(lightPos.set("lightPos", ofVec3f(40.0, -200, 114.0), ofVec3f(-200.0, -200.0, -200.0), ofVec3f(200.0, 200.0, 200.0)));
 	//gui.add(lightCoef.setup("_lightCoef", ofVec3f(0.1, 0.1, 0.2), ofVec3f(.0, .0, .0), ofVec3f(1.0, 1.0, 1.0)));
-	gui.add(absorbK.setup("absorbK", ofVec3f(0.34, 0.22, 0.10), ofVec3f(.0, .0, .0), ofVec3f(1.0, 1.0, 1.0)));
-	gui.add(renderMode.setup("renderMode", 1, 0, 2));
+	gui.add(absorbK.setup("absorbK", ofVec3f(1.0, 0.7, 0.10), ofVec3f(.0, .0, .0), ofVec3f(1.0, 1.0, 1.0)));
+	gui.add(renderMode.setup("renderMode", 2, 0, 2));
 
 	gui.add(albedoColor.set("AlbedoColor", ofFloatColor(0.3, 0.45, 0.45), ofFloatColor(0.0, 0.0, 0.0), ofFloatColor(1.0, 1.0, 1.0)));
 	gui.add(specularColor.set("SpecularColor", ofFloatColor(1.0, 1.0, 1.0), ofFloatColor(0.0, 0.0, 0.0), ofFloatColor(1.0, 1.0, 1.0)));
 	gui.add(ambientColor.set("AmbientColor", ofFloatColor(0.0, 0.03, 0.03), ofFloatColor(0.0, 0.0, 0.0), ofFloatColor(1.0, 1.0, 1.0)));
 	gui.add(shininess.set("Shininess", 2.0, 2.0, 200.0));
+	gui.add(fluidTransparent.setup("fluidTransparent", 0.15, 0.0, 1.0));
 	gui.add(implicitSurfaceTransparent.setup("implicitSurfaceTransparent", 0.5, 0.0, 1.0));
 	
 	

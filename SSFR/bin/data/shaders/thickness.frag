@@ -40,17 +40,18 @@ void main() {
 
     normal.z = (1.0 - radius_sq);
    
-
-
     vec4 viewFrontPos = vec4(vpos.xyz + normalize(normal) * size,  1.0);
 	vec4 screenSpaceFrontPos =  projectionMatrix * viewFrontPos;
     float depth = screenSpaceFrontPos.z / screenSpaceFrontPos.w;//表までのdepth
     depth = Linear01Depth(depth);
     //depth = (depth * 1.0) * 0.5;
 
-    vec4 viewBackPos = vec4(vpos.xyz - normalize(normal) * size,  1.0);
+    
+    //normal.z = -1.0 * normal.z;
+    normal.z = (-1.0 + radius_sq);
+    vec4 viewBackPos = vec4(vpos.xyz + normalize(normal) * size,  1.0);
 	vec4 screenSpaceBackPos =  projectionMatrix * viewBackPos;
-    depth = Linear01Depth(screenSpaceBackPos.z / screenSpaceBackPos.w) - depth;//表までのdepth
+    depth = Linear01Depth(screenSpaceBackPos.z / screenSpaceBackPos.w) - depth;//裏までのdepth
     //depth = (depth * 1.0) * 0.5;
     
     fragColor = vec4(vec3(depth ), 1.0);

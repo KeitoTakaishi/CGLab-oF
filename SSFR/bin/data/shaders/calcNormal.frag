@@ -76,16 +76,6 @@ void main(){
     
     //Todo
     //N.y = 1.0 - N.y;
-
     N = N * 0.5 + vec3(0.5, 0.5, 0.5);
-    
-    float res = 10.0;
     fragOut = vec4(vec3( N  ), 1.0);
-     
-    
-    
-    
-    //float d = Linear01Depth(depth);
-    //float res = 100.0;
-    //fragOut = vec4(vec3(floor(d*res)/res), 1.0);
 }

@@ -41,10 +41,6 @@ void main(){
         vpos = (viewMatrix * vec4(wpos,1.0)).xyz;
         */
         
-        
-
-
-        
         vec4 clip = modelViewProjectionMatrix * gl_in[0].gl_Position;
         //in world space
         vec4 particleCenterPosInWorld = (invViewMatrix * (invProjectionMatrix * clip));
