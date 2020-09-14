@@ -50,16 +50,16 @@ void main(){
     vec3 r = reflect(-s, n);
     vec3 v = normalize(-vec3(position));
     float spec = pow( max(dot(r, v), 0.0), shininess);
-    spec *= 0.5;
+    
 
     //frenel
-    float F0 = 0.05;
-    float frenel = F0 + (1.0 - F0) * pow(1.0- dot(v, n), 5);
+    float F0 = 0.15;
+    float frenel = F0 + (1.0 - F0) * pow(1.0- dot(v, n), 5.0);
     
 
     //Absorb
     //float _d = clamp(thickness, 0.0, 50.0);
-    thickness *= 5.0;
+    thickness *= 6.5;
     vec3 absorbColor = vec3(exp(-absorbK.x * thickness), exp(-absorbK.y * thickness), exp(-absorbK.z * thickness));
     absorbColor*=0.5;
     
@@ -68,11 +68,14 @@ void main(){
     vec3 ref = reflect(-normalize(position), normalize(normal));
     vec4 envColor  = texture(cubuMapTex, normalize(ref));
 
-    vec3 diffuseCol = vec3(0.0, 0.8, 0.8) * diffuse;
-    vec3 specCol = vec3(1.0) * spec;
-    vec3 frenelCol = vec3(1.0) * frenel;
+    vec3 diffuseCol = vec3(0.0, 0.8, 1.0) * diffuse;
+    vec3 specCol = vec3(1.0, 1.0, 1.0) * spec;
+    vec3 frenelCol = envColor.rgb * frenel;
 
-    vec3 lightingColor = diffuseCol + specCol + frenelCol * envColor.rgb + absorbColor;
+    vec3 lightingColor = diffuseCol + specCol + frenelCol + absorbColor;
+    //vec3 lightingColor = specCol + frenelCol + absorbColor;
+    //vec3 lightingColor = frenel*envColor.rgb;
+    //vec3 lightingColor = envColor.rgb;
     vec4 color = vec4(lightingColor, 1.0);
     fragOut = color;   
     //fragOut  = vec4(1.0, 1.0, 1.0, 1.0);
