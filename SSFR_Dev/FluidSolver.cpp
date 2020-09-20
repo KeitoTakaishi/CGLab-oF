@@ -47,11 +47,21 @@ void FluidSolver::loadFile() {
 
 
 	particle.setMode(OF_PRIMITIVE_POINTS);
+
+	//file---------------------------------
 	float range = 3.0;
 	for (int i = 0; i < numParticle; i++) {
-		ofVec3f p = ofVec3f(posParticles[i].x - 0.5, -1.0 * (posParticles[i].y - 0.5), posParticles[i].z - 0.5)  * range;
+		ofVec3f p = ofVec3f(posParticles[i].x - 0.5, (posParticles[i].y - 0.5), posParticles[i].z - 0.5)  * range;
 		pos.push_back(p);
-		particle.addVertex(p);
+		particle.addVertex(p); 
+	}
+	//custom data---------------------------------
+	int n = 100000;
+	for (int i = 0; i < n; i++) {
+		ofVec3f p = ofVec3f(ofRandom(-1.0, 1.0), ofRandom(-1.0, 1.0), ofRandom(-1.0, 1.0));
+		//ofVec3f p = ofVec3f( 0.1*(i-n/2.0), 0.0, 0.0 );
+		//pos.push_back(p);
+		//particle.addVertex(p);
 	}
 }
 

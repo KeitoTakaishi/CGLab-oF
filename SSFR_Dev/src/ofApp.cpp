@@ -22,7 +22,7 @@ void ofApp::setup(){
 	ssfr->init();
 	ssfr->loadShader();
 
-	cam.setupPerspective(true, 60.0f, 0.1f, 60.0f);
+	cam.setupPerspective(false, 60.0f, 0.1f, 60.0f);
 	ofLogNotice("NearClip : " + ofToString(cam.getNearClip()));
 	ofLogNotice("FarClip : " + ofToString(cam.getFarClip()));
 
@@ -58,6 +58,9 @@ void ofApp::setup(){
 	quad.addTexCoord(ofVec2f(0.0f, 0.0f));
 	quad.addVertex(ofVec3f(-1.0, 1.0, 0.0)); //top-left
 	quad.addTexCoord(ofVec2f(0.0f, 1.0f));
+
+	wireBox.set(50.0);
+	wireBox.setPosition(0., 0.0, 0.0);
 }
 
 //--------------------------------------------------------------
@@ -65,9 +68,9 @@ void ofApp::update(){
 	float t =ofGetElapsedTimef();
 	float theta = t * DEG_TO_RAD * 10.0f;
 	
-	//cam.setPosition(camRadius * cos(theta), camRadius * sin(theta), camRadius * sin(theta));
+	cam.setPosition(camRadius * cos(theta), camRadius * sin(theta), camRadius * sin(theta));
 	//cam.setPosition(camRadius * cos(theta), -2.0, camRadius * sin(theta));
-	//cam.lookAt(ofVec3f(0.0, 0.0, 0.0), ofVec3f(0.0, 1.0, 0.0));
+	cam.lookAt(ofVec3f(0.0, 0.0, 0.0), ofVec3f(0.0, 1.0, 0.0));
 
 }
 //--------------------------------------------------------------
@@ -93,6 +96,8 @@ void ofApp::draw(){
 	cam.setNearClip(clips.get().x);
 	cam.setFarClip(clips.get().y);
 	ssfr->calcDepthPass.begin();
+
+
 	view = ofGetCurrentViewMatrix();
 	invView = view.getInverse();
 	proj = cam.getProjectionMatrix();
@@ -105,6 +110,7 @@ void ofApp::draw(){
 	ssfr->calcDepthPass.setUniformMatrix4f("iv", invView);
 	ssfr->calcDepthPass.setUniformMatrix4f("ip", proj.getInverse());
 	ssfr->calcDepthPass.setUniform1f("size", size);
+	ssfr->calcDepthPass.setUniform1f("time", ofGetElapsedTimef());
 	solver->draw();
 	ssfr->calcDepthPass.end();
 
@@ -112,6 +118,7 @@ void ofApp::draw(){
 	//box.drawWireframe();
 	cam.end();
 	ssfr->calcDepthEnd();
+
 
 	//1st BlurPass
 	ssfr->blur1Fbo.begin();
@@ -149,8 +156,7 @@ void ofApp::draw(){
 	ssfr->calcNormalPass.end();
 	ssfr->normalFbo.end();
 
-
-
+	
 	//Thickness
 	ssfr->thicknessFbo.begin();
 	ofClear(0);
@@ -190,11 +196,9 @@ void ofApp::draw(){
 	
 
 	//RayMarching
-	ofEnableAlphaBlending();
-	
+	//ofEnableAlphaBlending();
 
 	//Fluid
-	
 	ssfr->renderFbo.begin();
 	cubeMap.bind();
 	ssfr->renderSSFRPass.begin();
@@ -202,14 +206,18 @@ void ofApp::draw(){
 	ssfr->renderSSFRPass.setUniformTexture("positionTex", ssfr->depthFbo.getTexture(1), 4);
 	ssfr->renderSSFRPass.setUniformTexture("normalTex", ssfr->normalFbo.getTexture(0), 5);
 	ssfr->renderSSFRPass.setUniformTexture("thicknessTex", ssfr->thicknessFbo.getTexture(0), 6);
+	//ofMatrix4x4 _v = getViewMatrix(cam.getPosition(), camUp, ofVec3f(0.0, 0.0, 0.0));
 	ssfr->renderSSFRPass.setUniformMatrix4f("viewMatrix", view);
+	ssfr->renderSSFRPass.setUniformMatrix4f("invViewMatrix", invView);
 	ssfr->renderSSFRPass.setUniform3f("lightPos", lightPos);
+	ssfr->renderSSFRPass.setUniform3f("camPos", cam.getGlobalPosition());
 	ssfr->renderSSFRPass.setUniform1f("shininess", shininess);
 	ssfr->renderSSFRPass.setUniform3f("absorbK", absorbK);
 	ssfr->thicknessFbo.draw(0.0, 0.0);//quad‚É•Ï‚¦‚½‚Ù‚¤‚ª‚æ‚³‚»‚¤
 	ssfr->renderSSFRPass.end();
 	cubeMap.unbind();
 	ssfr->renderFbo.end();
+
 	
 	ssfr->renderFbo.begin();
 	cubeMap.bind();
@@ -224,7 +232,24 @@ void ofApp::draw(){
 	ssfr->rayMarchingPass.end();
 	cubeMap.unbind();
 	ssfr->renderFbo.end();
+	
 
+	ssfr->renderFbo.begin();
+	cam.begin();
+	//ofDrawAxis(5000.0);
+	//wireBox.drawWireframe();
+	cam.end();
+	ssfr->renderFbo.end();
+
+	//Debug
+	/*
+	cam.begin();
+	cam.lookAt(ofVec3f(0.0, 0.0, 0.0), ofVec3f(0.0, -1.0, 0.0));
+	ofDrawAxis(1000);
+	ofDrawBox(ofVec3f(0.0, 0.0, 0.0), 100.0);
+	ofDrawBox(ofVec3f(0.0, 300.0, 0.0), 100.0);
+	cam.end();
+	*/
 
 	//2D
 	ofDisableDepthTest();
@@ -253,14 +278,15 @@ void ofApp::initGUI() {
 	depthGui.setPosition(0.0, 0.0);
 	depthGui.setName("CalcDepth");
 	depthGui.add(camRadius.set("Cam Radius", 3.0, 0.1, 10.0));
-	depthGui.add(size.set("Particle Size", 0.1, 0.01, 1.0));
+	depthGui.add(size.set("Particle Size", 0.08, 0.01, 1.0));
 	depthGui.add(clips.set("Near-Far", ofVec2f(0.3f, 100.0f), ofVec2f(0.1f, 1.0f), ofVec2f(10.0f, 1000.0f)));
+
 
 	blurGui.setup();
 	blurGui.setPosition(0.0, 150.0);
 	blurGui.setName("Blur");
-	blurGui.add(blurScale.set("BlurScale", 0.13, 0.0, 1.0));
-	blurGui.add(blurDepthFallOff.set("BlurDepthFallOff", 10.0, 0.0, 30.0));
+	blurGui.add(blurScale.set("BlurScale", 0.09, 0.0, 1.0));
+	blurGui.add(blurDepthFallOff.set("BlurDepthFallOff", 2.0, 0.0, 30.0));
 
 
 	renderGui.setup();
@@ -268,5 +294,60 @@ void ofApp::initGUI() {
 	renderGui.setName("Render(SSFR)");
 	renderGui.add(lightPos.setup("LightPos", ofVec3f(12.0, -100.0, 12.0), ofVec3f(-300.0, -300.0, -300.0), ofVec3f(300.0, 300.0, 300.0)));
 	renderGui.add(shininess.setup("Shininess", 100.0, 0.0, 300.0));
-	renderGui.add(absorbK.setup("AbsorbK", ofVec3f(1.0, 0.7, 0.10), ofVec3f(.0, .0, .0), ofVec3f(1.0, 1.0, 1.0)));
+	renderGui.add(absorbK.setup("AbsorbK", ofVec3f(0.95, 0.15, 0.2), ofVec3f(.0, .0, .0), ofVec3f(1.0, 1.0, 1.0)));
+}
+//--------------------------------------------------------------
+ofMatrix4x4 ofApp::getViewMatrix(ofVec3f eye, ofVec3f up, ofVec3f center) {
+	float eyeX = eye[0], eyeY = eye[1], eyeZ = eye[2],
+		upX = up[0], upY = up[1], upZ = up[2],
+		centerX = center[0], centerY = center[1], centerZ = center[2];
+
+	//if (eyeX == centerX && eyeY == centerY && eyeZ == centerZ) { return this.identity(dest); }
+	float x0, x1, x2, y0, y1, y2, z0, z1, z2, l;
+	z0 = eyeX - center[0]; z1 = eyeY - center[1]; z2 = eyeZ - center[2];
+	l = 1 / sqrt(z0 * z0 + z1 * z1 + z2 * z2);
+	z0 *= l; z1 *= l; z2 *= l;
+	x0 = upY * z2 - upZ * z1;
+	x1 = upZ * z0 - upX * z2;
+	x2 = upX * z1 - upY * z0;
+	l = sqrt(x0 * x0 + x1 * x1 + x2 * x2);
+	if (!l) {
+		x0 = 0; x1 = 0; x2 = 0;
+	}
+	else {
+		l = 1 / l;
+		x0 *= l; x1 *= l; x2 *= l;
+	}
+	y0 = z1 * x2 - z2 * x1; y1 = z2 * x0 - z0 * x2; y2 = z0 * x1 - z1 * x0;
+	l = sqrt(y0 * y0 + y1 * y1 + y2 * y2);
+	if (!l) {
+		y0 = 0; y1 = 0; y2 = 0;
+	}
+	else {
+		l = 1 / l;
+		y0 *= l; y1 *= l; y2 *= l;
+	}
+	ofMatrix4x4 view = ofMatrix4x4(
+		x0, y0, z0, 0.0,
+		x1, y1, z1, 0.0,
+		x2, y2, z2, 0.0,
+		-(x0 * eyeX + x1 * eyeY + x2 * eyeZ), -(y0 * eyeX + y1 * eyeY + y2 * eyeZ), -(z0 * eyeX + z1 * eyeY + z2 * eyeZ), 1.0
+	);
+
+	return view;
+}
+
+//--------------------------------------------------------------
+ofMatrix4x4 ofApp::getProjMatrix(float fov, float aspect, float n, float f) {
+	float r = 1 / tan(fov * PI / 360);
+	float _far = f;
+	float _near = n;
+	float d = _far - _near;
+	ofMatrix4x4 proj = ofMatrix4x4(
+		r / aspect, 0.0, 0.0, 0.0,
+		0.0, r, 0.0, 0.0,
+		0.0, 0.0, -(_far + _near) / d, -1.0,
+		0.0, 0.0, -(_far * _near * 2) / d, 0.0
+	);
+	return proj;
 }

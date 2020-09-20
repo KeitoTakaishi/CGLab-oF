@@ -19,6 +19,7 @@ uniform mat4 p;
 uniform mat4 iv;
 uniform mat4 ip;
 uniform float size;
+uniform float time;
 
 out vec2 vTexCoord;
 out vec3 vpos;
@@ -43,6 +44,7 @@ vec2[4] g_tex = vec2[](
 		vec2(1, 0)
 );
 
+
 /*
 modelg等列にはどうやら意味があるらしい
 //vec4 clip = modelViewProjectionMatrix * gl_in[0].gl_Position;
@@ -63,7 +65,7 @@ void main(){
        
         //g_posはカメラから見て(1, 1), (-1, 1)とかなので
         //invViewMatrixの変換でワールド座標へ変換される
-        vec4 wPos = (iv * vec4(g_pos[i].xyz * size, 0.0)) + particleCenterPosInWorld;
+        vec4 wPos = (iv * vec4(g_pos[i].xyz * size , 0.0)) + particleCenterPosInWorld;
         gl_Position = p * v * vec4(wPos.xyz, 1.0);
         //gl_Position = clip;
         vpos = (v * vec4(wPos.xyz, 1.0)).xyz;

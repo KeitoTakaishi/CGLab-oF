@@ -12,7 +12,7 @@ out vec4 fragOut;
 void main(){
     //vec3 ref = reflect(vPosition - cameraPos, vNormal);
     vec3 ref = vec3(0.0, 0.0, 0.0);
-    if(reflection == 1){
+    if(reflection == 0){
         ref = reflect(vPosition - cameraPos, vNormal);
     }else{
         //ref = vNormal;

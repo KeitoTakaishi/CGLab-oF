@@ -22,8 +22,8 @@ void main() {
     vec3 normal = vec3(0.0, 0.0, 0.0);
     vec2 uv = vTexCoord;
     
-    uv = uv * 2.0 - vec2(1.0, 1.0);
-    
+    //uv : -1.0 ~ 1.0
+    uv = uv * 2.0 - vec2(1.0, 1.0);    
     normal.xy = uv;
     float radius_sq = dot(uv.xy, uv.xy);
 	if (radius_sq > 1.0) {

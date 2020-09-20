@@ -20,7 +20,7 @@ uniform samplerCube cubuMapTex;
 #define PI 3.14159265359
 #define DEG2RAD (PI/180.0)
 
-const float sphereSize = 1.2;
+const float sphereSize = 0.99;
 const vec3 lightDir = vec3(-0.577, 0.577, 0.577);
 
 float distanceFunc(vec3 p){
@@ -57,12 +57,12 @@ void main()
     vec3 ray = normalize(cSide * p.x + cUp * p.y + cDir * targetDepth);
     
     // marching loop
-    float distance = 0.0; // レイとオブジェクト間の最短距離
+    float dis = 0.0; // レイとオブジェクト間の最短距離
     float rLen = 0.0;     // レイに継ぎ足す長さ
     vec3  rPos = cPos;    // レイの先端位置
     for(int i = 0; i < 16; i++){
-        distance = distanceFunc(rPos);
-        rLen += distance;
+        dis = distanceFunc(rPos);
+        rLen += dis;
         rPos = cPos + ray * rLen;
 
     }
@@ -75,7 +75,7 @@ void main()
     float eta = 0.1;
     vec3 refrDir = refract(-wView, wNormal, eta);
 
-    if(abs(distance) < 0.001){
+    if(abs(dis) < 0.001){
 
         //debug
         refDir.y = -1.0 * refDir.y;
@@ -95,8 +95,10 @@ void main()
         diffuse = diffuse * 0.5 + 0.5;
         vec3 r = reflect(-s, n);
         vec3 v = normalize(-vec3(wPos));
-        float spec = pow( max(dot(r, v), 0.0), 10.0) * 2.;
-        outputColor =  c * diffuse + spec * vec4(1.0, 1.0, 1.0, 0.0);
+        float spec = pow( max(dot(r, v), 0.0), 40.0) * 2.;
+
+        vec4 finalColor = c * diffuse + spec * vec4(1.0, 1.0, 1.0, 0.0);
+        outputColor = vec4(finalColor.rgb, 0.2);
       
         //debug
         vec4 viewNormal = view * vec4(wNormal, 0.0);

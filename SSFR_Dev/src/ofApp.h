@@ -14,6 +14,9 @@ class ofApp : public ofBaseApp{
 		void keyPressed(int key);
 		void initGUI();
 
+		ofMatrix4x4 getViewMatrix(ofVec3f eye, ofVec3f up, ofVec3f center);
+		ofMatrix4x4 getProjMatrix(float fov, float aspect, float n, float f);
+		
 		SSFR* ssfr;
 		FluidSolver* solver;
 		CubeMap cubeMap;
@@ -21,6 +24,7 @@ class ofApp : public ofBaseApp{
 		
 		ofEasyCam cam;
 		ofBoxPrimitive room;
+		ofBoxPrimitive wireBox;
 		ofSpherePrimitive container;
 		ofShader shader;
 		ofMesh quad;

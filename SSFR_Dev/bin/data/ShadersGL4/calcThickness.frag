@@ -19,7 +19,7 @@ float Linear01Depth( float z )
 {
     //x は (1-far/near)、 y は (far/near)
     //float near = camClips.x;
-    float near = 0.65;
+    float near = 0.1 ;
     float far = 100.0;
     return 1.0 / ((1.0 - far/near) * z + (far/near));
 }
@@ -41,8 +41,10 @@ void main() {
 
     normal.z = (1.0 - radius_sq);
     vec4 viewFrontPos = vec4(vpos.xyz + normalize(normal) * size,  1.0);
-	vec4 screenSpaceFrontPos =  p * viewFrontPos;
-    float frontDepth = screenSpaceFrontPos.z / screenSpaceFrontPos.w;//表までのdepth
+	//vec4 screenSpaceFrontPos =  p * viewFrontPos;
+	vec4 screenSpaceFrontPos =  viewFrontPos;
+    float frontDepth = screenSpaceFrontPos.z;//表までのdepth
+    
     //frontDepth = (frontDepth + 1.0) * 0.5;
     //frontDepth = Linear01Depth(frontDepth);
     
@@ -51,13 +53,14 @@ void main() {
     //normal.z = -1.0 * normal.z;
     normal.z = (-1.0 + radius_sq);
     vec4 viewBackPos = vec4(vpos.xyz + normalize(normal) * size,  1.0);
-	vec4 screenSpaceBackPos =  p * viewBackPos;
+	//vec4 screenSpaceBackPos =  p * viewBackPos;
+	vec4 screenSpaceBackPos =  viewBackPos;
     //depth = Linear01Depth(screenSpaceBackPos.z / screenSpaceBackPos.w) - depth;//裏までのdepth
-    float backDepth = screenSpaceBackPos.z / screenSpaceBackPos.w;
+    float backDepth = screenSpaceBackPos.z ;
     //backDepth = (backDepth + 1.0) * 0.5;
     //backDepth = Linear01Depth(backDepth);
     
-    float thickness = backDepth - frontDepth;//裏までのdepth
+    float thickness = abs(backDepth - frontDepth);//裏までのdepth
     
     //depth = (depth * 1.0) * 0.5;
     

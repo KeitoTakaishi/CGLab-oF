@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<CalcDepth>
+	<Cam_Radius>3</Cam_Radius>
+	<Particle_Size>0.0892</Particle_Size>
+	<Near-Far>0.3, 100</Near-Far>
+</CalcDepth>
