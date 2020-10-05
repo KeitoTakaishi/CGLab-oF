@@ -21,4 +21,5 @@ void main(){
     vec4 envColor  = texture(EnvMap, normalize(ref));
     //fragOut = vec4(texture(EnvMap, normalize(vNormal).rgb, 1.0));
     fragOut = envColor;
+    //fragOut = vec4(1.0, 0.0, 0.0, 1.0);
 }

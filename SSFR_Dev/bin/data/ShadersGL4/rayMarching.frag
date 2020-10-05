@@ -20,7 +20,7 @@ uniform samplerCube cubuMapTex;
 #define PI 3.14159265359
 #define DEG2RAD (PI/180.0)
 
-const float sphereSize = 0.99;
+const float sphereSize = 1.5;
 const vec3 lightDir = vec3(-0.577, 0.577, 0.577);
 
 float distanceFunc(vec3 p){
@@ -64,7 +64,6 @@ void main()
         dis = distanceFunc(rPos);
         rLen += dis;
         rPos = cPos + ray * rLen;
-
     }
     
     // hit
@@ -95,10 +94,11 @@ void main()
         diffuse = diffuse * 0.5 + 0.5;
         vec3 r = reflect(-s, n);
         vec3 v = normalize(-vec3(wPos));
-        float spec = pow( max(dot(r, v), 0.0), 40.0) * 2.;
+        float spec = pow( max(dot(r, v), 0.0), 10.0) * 2.;
 
         vec4 finalColor = c * diffuse + spec * vec4(1.0, 1.0, 1.0, 0.0);
-        outputColor = vec4(finalColor.rgb, 0.2);
+        outputColor = vec4(finalColor.rgb, 0.35);
+        //outputColor = vec4(1.0, 0.0, 0.0, 0.8);
       
         //debug
         vec4 viewNormal = view * vec4(wNormal, 0.0);

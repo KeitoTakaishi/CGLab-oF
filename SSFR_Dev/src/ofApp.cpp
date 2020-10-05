@@ -11,8 +11,8 @@ void ofApp::setup(){
 	
 #endif
 
-	ofSetVerticalSync(true);
-	ofSetFrameRate(60);
+	ofSetVerticalSync(false);
+	//ofSetFrameRate(60);
 
 	ssfr = new SSFR();
 	solver = new FluidSolver();
@@ -38,7 +38,7 @@ void ofApp::setup(){
 	ofEnableArbTex();
 	
 
-	room.set(25);
+	room.set(100);
 	room.setResolution(32);
 	room.setPosition(0.0, 0.0, 0.0);
 	initGUI();
@@ -59,8 +59,7 @@ void ofApp::setup(){
 	quad.addVertex(ofVec3f(-1.0, 1.0, 0.0)); //top-left
 	quad.addTexCoord(ofVec2f(0.0f, 1.0f));
 
-	wireBox.set(50.0);
-	wireBox.setPosition(0., 0.0, 0.0);
+	
 }
 
 //--------------------------------------------------------------
@@ -68,7 +67,7 @@ void ofApp::update(){
 	float t =ofGetElapsedTimef();
 	float theta = t * DEG_TO_RAD * 10.0f;
 	
-	cam.setPosition(camRadius * cos(theta), camRadius * sin(theta), camRadius * sin(theta));
+	cam.setPosition(camRadius * cos(theta), 1.5, camRadius * sin(theta));
 	//cam.setPosition(camRadius * cos(theta), -2.0, camRadius * sin(theta));
 	cam.lookAt(ofVec3f(0.0, 0.0, 0.0), ofVec3f(0.0, 1.0, 0.0));
 
@@ -179,10 +178,11 @@ void ofApp::draw(){
 		
 	//render
 	//Sphere
+	
 	ofEnableDepthTest();
 	
 	ssfr->renderFbo.begin();
-	ofClear(0);
+	ofClear(0, 0.0, 0.0);
 	cubeMap.bind();
 	cam.begin();
 	ssfr->cubeMapPass.begin();
@@ -196,10 +196,11 @@ void ofApp::draw(){
 	
 
 	//RayMarching
-	//ofEnableAlphaBlending();
+	ofEnableAlphaBlending();
 
 	//Fluid
 	ssfr->renderFbo.begin();
+	//ofClear(0);//Debug
 	cubeMap.bind();
 	ssfr->renderSSFRPass.begin();
 	ssfr->renderSSFRPass.setUniformTexture("depthTex", ssfr->depthFbo.getTexture(0), 3);
@@ -219,6 +220,7 @@ void ofApp::draw(){
 	ssfr->renderFbo.end();
 
 	
+	//Implicit Surface
 	ssfr->renderFbo.begin();
 	cubeMap.bind();
 	ssfr->rayMarchingPass.begin();
@@ -232,24 +234,8 @@ void ofApp::draw(){
 	ssfr->rayMarchingPass.end();
 	cubeMap.unbind();
 	ssfr->renderFbo.end();
-	
 
-	ssfr->renderFbo.begin();
-	cam.begin();
-	//ofDrawAxis(5000.0);
-	//wireBox.drawWireframe();
-	cam.end();
-	ssfr->renderFbo.end();
 
-	//Debug
-	/*
-	cam.begin();
-	cam.lookAt(ofVec3f(0.0, 0.0, 0.0), ofVec3f(0.0, -1.0, 0.0));
-	ofDrawAxis(1000);
-	ofDrawBox(ofVec3f(0.0, 0.0, 0.0), 100.0);
-	ofDrawBox(ofVec3f(0.0, 300.0, 0.0), 100.0);
-	cam.end();
-	*/
 
 	//2D
 	ofDisableDepthTest();
@@ -260,9 +246,28 @@ void ofApp::draw(){
 	//ssfr->thicknessFbo.draw(0.0, 0.0);
 	ssfr->renderFbo.draw(0.0, 0.0);
 	
+	
+	ofPushStyle();
+	ofSetColor(125, 100.0);
+	ofDrawRectangle(ofGetWidth() - 200, 0.0, 200, 80);
+	ofSetColor(255.0, 255.0);
+	ofDrawBitmapString("particle num : " + ofToString(solver->particle.getVertices().size()), ofGetWidth() - 180, 20.0);
+	ofDrawBitmapString("fps : " + ofToString(ofGetFrameRate()), ofGetWidth() - 180, 40.0);
+	ofPopStyle();
+	
+
+
 	depthGui.draw();
 	blurGui.draw();
 	renderGui.draw();
+
+	if (ofGetFrameNum() == 10000) {
+		clock_t end = clock();
+		const double time = static_cast<double>(end) / CLOCKS_PER_SEC * 1000.0;
+
+		cout << time << "ms" << endl;
+
+	}
 }
 
 //--------------------------------------------------------------
@@ -277,8 +282,8 @@ void ofApp::initGUI() {
 	depthGui.setup();
 	depthGui.setPosition(0.0, 0.0);
 	depthGui.setName("CalcDepth");
-	depthGui.add(camRadius.set("Cam Radius", 3.0, 0.1, 10.0));
-	depthGui.add(size.set("Particle Size", 0.08, 0.01, 1.0));
+	depthGui.add(camRadius.set("Cam Radius", 4.0, 0.1, 10.0));
+	depthGui.add(size.set("Particle Size", 0.04, 0.01, 0.1));
 	depthGui.add(clips.set("Near-Far", ofVec2f(0.3f, 100.0f), ofVec2f(0.1f, 1.0f), ofVec2f(10.0f, 1000.0f)));
 
 

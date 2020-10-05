@@ -1,9 +1,9 @@
 #pragma once
 
 #include "ofMain.h"
-#include "../SSFR.h"
-#include "../FluidSolver.h"
-#include "../CubeMap.h"
+#include "SSFR.h"
+#include "FluidSolver.h"
+#include "CubeMap.h"
 #include "ofxGui.h"
 
 class ofApp : public ofBaseApp{
@@ -47,4 +47,10 @@ class ofApp : public ofBaseApp{
 		ofxVec3Slider lightPos;
 		ofxFloatSlider shininess;
 		ofxVec3Slider absorbK;
+
+
+		//Timer
+		int frameCounter = 0;
+		double time;
+		clock_t strat;
 };
