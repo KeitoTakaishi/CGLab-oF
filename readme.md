@@ -11,7 +11,7 @@ StamFluid-Sample
 PreviewDepth
 
 ## SSFR
-WIP
+WIP(update coming soon)
 
 <img src="./ReferenceImage/SSFR.gif" alt="" title="SSFR01">
 <img src="./ReferenceImage/SSFR.jpg" alt="" title="SSFR01">
